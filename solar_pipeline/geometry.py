@@ -56,4 +56,4 @@ def estimate_mu_lat_lon(dx, dy, rsun_pix: float, b0_deg: float, l0_deg: float):
     cmd[valid] = np.arctan2(sin_cmd[valid], cos_cmd[valid])
     lon[valid] = np.mod(l0 + cmd[valid], 2.0 * np.pi)
 
-    return mu, lat, lon
+    return mu, lat, lon, cmd

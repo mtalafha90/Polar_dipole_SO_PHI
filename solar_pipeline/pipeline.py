@@ -22,7 +22,7 @@ from .carrington import (
 )
 
 
-def run_case(
+def compute_case_fields(
     phi_blos_path: Path,
     hmi_index,
     *,
@@ -32,9 +32,13 @@ def run_case(
     disk_fraction: float,
     mu_min: float,
     alpha: float,
-    nlat: int,
-    nlon: int,
 ):
+    """Match, reproject, blend, and convert a single PHI/HMI case to Br.
+
+    Returns the per-pixel fields (mu, lat, lon, central-meridian distance,
+    Br for PHI/HMI/merged and their validity masks) shared by both the
+    per-case baseline pipeline and multi-case synoptic assimilation.
+    """
     phi_time = parse_phi_time(phi_blos_path)
     hmi_path, hmi_time, time_diff_sec = find_nearest_hmi(phi_time, hmi_index)
 
@@ -78,7 +82,7 @@ def run_case(
         r_outer=r_outer,
     )
 
-    mu, lat, lon = estimate_mu_lat_lon(
+    mu, lat, lon, cmd = estimate_mu_lat_lon(
         dx=dx, dy=dy, rsun_pix=rsun_pix, b0_deg=b0_deg, l0_deg=l0_deg
     )
 
@@ -86,26 +90,74 @@ def run_case(
     br_hmi, valid_hmi = los_to_br(hmi_on_phi.data, mu, mu_min=mu_min, alpha=alpha)
     br_merged, valid_merged = los_to_br(merged, mu, mu_min=mu_min, alpha=alpha)
 
+    return {
+        "phi_blos": phi_blos,
+        "hmi": hmi,
+        "hmi_path": hmi_path,
+        "phi_time": phi_time,
+        "hmi_time": hmi_time,
+        "time_diff_sec": time_diff_sec,
+        "merged": merged,
+        "mu": mu,
+        "lat": lat,
+        "lon": lon,
+        "cmd": cmd,
+        "br_phi": br_phi,
+        "br_hmi": br_hmi,
+        "br_merged": br_merged,
+        "valid_phi": valid_phi,
+        "valid_hmi": valid_hmi,
+        "valid_merged": valid_merged,
+    }
+
+
+def run_case(
+    phi_blos_path: Path,
+    hmi_index,
+    *,
+    max_time_diff_sec: float,
+    r_inner: float,
+    r_outer: float,
+    disk_fraction: float,
+    mu_min: float,
+    alpha: float,
+    nlat: int,
+    nlon: int,
+):
+    fields = compute_case_fields(
+        phi_blos_path,
+        hmi_index,
+        max_time_diff_sec=max_time_diff_sec,
+        r_inner=r_inner,
+        r_outer=r_outer,
+        disk_fraction=disk_fraction,
+        mu_min=mu_min,
+        alpha=alpha,
+    )
+
     grid_phi, count_phi, lat_centers, lon_centers = bin_br_to_carrington(
-        br_phi, lat, lon, valid_phi, nlat=nlat, nlon=nlon
+        fields["br_phi"], fields["lat"], fields["lon"], fields["valid_phi"], nlat=nlat, nlon=nlon
     )
     grid_hmi, count_hmi, _, _ = bin_br_to_carrington(
-        br_hmi, lat, lon, valid_hmi, nlat=nlat, nlon=nlon
+        fields["br_hmi"], fields["lat"], fields["lon"], fields["valid_hmi"], nlat=nlat, nlon=nlon
     )
     grid_merged, count_merged, _, _ = bin_br_to_carrington(
-        br_merged, lat, lon, valid_merged, nlat=nlat, nlon=nlon
+        fields["br_merged"], fields["lat"], fields["lon"], fields["valid_merged"], nlat=nlat, nlon=nlon
     )
 
     dip_phi = axial_dipole_from_carrington_grid(grid_phi, lat_centers)
     dip_hmi = axial_dipole_from_carrington_grid(grid_hmi, lat_centers)
     dip_merged = axial_dipole_from_carrington_grid(grid_merged, lat_centers)
 
+    phi_blos = fields["phi_blos"]
+    hmi = fields["hmi"]
+
     row = {
         "phi_blos_file": phi_blos_path.name,
-        "phi_time": phi_time.isoformat(),
-        "hmi_file": hmi_path.name,
-        "hmi_time": hmi_time.isoformat(),
-        "time_diff_sec": float(time_diff_sec),
+        "phi_time": fields["phi_time"].isoformat(),
+        "hmi_file": fields["hmi_path"].name,
+        "hmi_time": fields["hmi_time"].isoformat(),
+        "time_diff_sec": float(fields["time_diff_sec"]),
         "dip_phi": dip_phi,
         "dip_hmi": dip_hmi,
         "dip_merged": dip_merged,
@@ -121,7 +173,7 @@ def run_case(
     }
 
     arrays = {
-        "merged": merged,
+        "merged": fields["merged"],
         "phi_header": phi_blos.fits_header,
         "grid_phi": grid_phi,
         "grid_hmi": grid_hmi,

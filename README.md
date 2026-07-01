@@ -56,6 +56,8 @@ package/
     __init__.py
     run_baseline_pipeline.py
     plot_baseline_summary.py
+    alpha_sensitivity_sweep.py
+    run_synoptic_assimilation.py
   PHI/
     solo_L2_phi-fdt-blos_*.fits
     solo_L2_phi-fdt-icnt_*.fits
@@ -178,6 +180,42 @@ For each PHI LOS magnetogram in the selected subset:
 
 ---
 
+## 6a. Optional analysis tools
+
+Two additional scripts build on the baseline pipeline without changing its
+locked defaults:
+
+**Alpha sensitivity sweep** — re-runs the pipeline across a range of `ALPHA`
+values (the exponent in `Br ≈ Blos / mu^alpha`) and reports how the PHI/HMI/
+merged dipole estimates change, to help evaluate a future default:
+
+```bash
+python scripts/alpha_sensitivity_sweep.py --alphas 0.6,0.7,0.8,0.9,1.0
+```
+
+Outputs go to `baseline_outputs/alpha_sweep/` (`alpha_sweep_all_cases.csv`,
+`alpha_sweep_summary.csv`, `plots/alpha_sensitivity.png`). This tool does not
+modify `baseline_config.py` — picking a new default alpha is a separate,
+deliberate decision once real sensitivity results are available.
+
+**Synoptic map assimilation** — combines several visible-disk cases from the
+selected subset into one Carrington-style synoptic map. Each case's
+contribution to a given bin is weighted by `cos(cmd)^n`, where `cmd` is that
+pixel's angular distance from central meridian at observation time (`n` set
+by `--cm-weight-power`, default 1) — near-central-meridian samples are
+trusted more than near-limb samples when cases overlap:
+
+```bash
+python scripts/run_synoptic_assimilation.py
+```
+
+Outputs go to `baseline_outputs/synoptic/` (`synoptic_grid.npy`,
+`synoptic_weight.npy`, `synoptic_summary.txt`, `plots/synoptic_map.png`).
+With only 1–2 days of data this still leaves large gaps in longitude; it
+becomes more useful once the subset is extended (see §9).
+
+---
+
 ## 7. Scientific interpretation of the current baseline
 
 For the 27–28 October 2022 subset, the baseline results show:
@@ -196,10 +234,9 @@ This baseline should therefore be treated as a **working reference implementatio
 
 The main limitations are physical rather than geometric:
 
-- `Br ≈ Blos / mu^alpha` is only an approximation
+- `Br ≈ Blos / mu^alpha` is only an approximation; `ALPHA` itself has not been re-validated against real sensitivity results (see `scripts/alpha_sensitivity_sweep.py` in §6a)
 - no full vector inversion is used
-- only the visible disk is used at a time
-- the Carrington map is a binned visible-disk approximation, not a full synoptic assimilation product
+- only the visible disk is used at a time — `scripts/run_synoptic_assimilation.py` (§6a) combines multiple cases with central-meridian weighting, but with only 1–2 days of data it still leaves large longitude gaps
 - metadata cleanup could still be improved for completely warning-free runs
 
 ---
@@ -208,11 +245,11 @@ The main limitations are physical rather than geometric:
 
 Good next directions include:
 
-- improving the LOS-to-radial conversion
-- assimilating multiple visible-disk maps into a fuller Carrington map
+- ~~improving the LOS-to-radial conversion~~ — sensitivity-sweep tooling added (§6a); picking a new `ALPHA` default still needs a real run against PHI/HMI data
+- ~~assimilating multiple visible-disk maps into a fuller Carrington map~~ — done via central-meridian-weighted assimilation (§6a)
 - extending the analysis beyond 27–28 Oct 2022
-- adding a command-line interface for cleaner execution
-- packaging the code formally for reuse
+- ~~adding a command-line interface for cleaner execution~~ — done (§4)
+- ~~packaging the code formally for reuse~~ — done (`pyproject.toml`, §3)
 
 ---
 

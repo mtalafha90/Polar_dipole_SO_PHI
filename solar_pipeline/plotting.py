@@ -52,3 +52,22 @@ def make_baseline_plots(df: pd.DataFrame, plots_dir: Path, title_suffix: str = "
     plt.tight_layout()
     plt.savefig(plots_dir / "time_differences.png", dpi=150)
     plt.close()
+
+
+def plot_carrington_map(grid, lat_centers, lon_centers, path: Path, title: str = ""):
+    plt.figure(figsize=(10, 5))
+    extent = [
+        np.rad2deg(lon_centers[0]),
+        np.rad2deg(lon_centers[-1]),
+        np.rad2deg(lat_centers[0]),
+        np.rad2deg(lat_centers[-1]),
+    ]
+    vmax = np.nanmax(np.abs(grid)) if np.any(np.isfinite(grid)) else 1.0
+    plt.imshow(grid, origin="lower", extent=extent, aspect="auto", cmap="RdBu_r", vmin=-vmax, vmax=vmax)
+    plt.colorbar(label="Br [G]")
+    plt.xlabel("Carrington longitude [deg]")
+    plt.ylabel("Latitude [deg]")
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(path, dpi=150)
+    plt.close()
