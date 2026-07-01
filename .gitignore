@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# venv
+sopyhi_env/
+
+# pipeline outputs and inputs (large/generated data)
+baseline_outputs/
+PHI/
+HMI/

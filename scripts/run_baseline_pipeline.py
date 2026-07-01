@@ -93,6 +93,8 @@ def main():
 
     df.to_csv(full_csv, index=False)
 
+    good = df[df.get("error").isna()] if "error" in df.columns else df
+
     summary_cols = [
         "phi_blos_file",
         "phi_time",
@@ -112,11 +114,10 @@ def main():
         "fill_hmi",
         "fill_merged",
     ]
-    summary_cols = [c for c in summary_cols if c in df.columns]
-    summary_df = df[summary_cols].copy()
+    summary_cols = [c for c in summary_cols if c in good.columns]
+    summary_df = good[summary_cols].copy()
     summary_df.to_csv(summary_csv, index=False)
 
-    good = df[df.get("error").isna()] if "error" in df.columns else df
     stats = summarize_dataframe(good)
 
     with open(notes_txt, "w") as f:

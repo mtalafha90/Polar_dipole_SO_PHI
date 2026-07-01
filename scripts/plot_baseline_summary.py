@@ -11,6 +11,8 @@ def main():
         raise FileNotFoundError(f"Missing summary CSV: {summary_csv}")
 
     df = pd.read_csv(summary_csv)
+    if "error" in df.columns:
+        df = df[df["error"].isna()]
     make_baseline_plots(df, OUT_DIR / "plots", title_suffix=f" (MU_MIN={MU_MIN}, alpha={ALPHA})")
     print(f"Plots saved in: {(OUT_DIR / 'plots').resolve()}")
 
