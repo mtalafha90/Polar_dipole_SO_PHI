@@ -48,3 +48,25 @@ def find_nearest_hmi(phi_time: datetime, hmi_index: list[tuple[Path, datetime]])
 
 def save_fits(path: Path, data, header) -> None:
     fits.writeto(path, data=data, header=header, overwrite=True)
+
+
+def save_synoptic_fits(path: Path, grid, lat_centers, lon_centers, extra: dict | None = None) -> None:
+    """Write a Carrington-style (linear latitude x longitude) Br grid as a
+    FITS image with a plate-carree WCS, suitable as SFT model input."""
+    import numpy as np
+
+    header = fits.Header()
+    header["ctype1"] = "CRLN-CAR"
+    header["ctype2"] = "CRLT-CAR"
+    header["cunit1"] = "deg"
+    header["cunit2"] = "deg"
+    header["crpix1"] = 1.0
+    header["crpix2"] = 1.0
+    header["crval1"] = float(np.rad2deg(lon_centers[0]))
+    header["crval2"] = float(np.rad2deg(lat_centers[0]))
+    header["cdelt1"] = float(np.rad2deg(lon_centers[1] - lon_centers[0]))
+    header["cdelt2"] = float(np.rad2deg(lat_centers[1] - lat_centers[0]))
+    header["bunit"] = "Gauss"
+    for key, val in (extra or {}).items():
+        header[key] = val
+    fits.writeto(path, data=grid.astype("float32"), header=header, overwrite=True)

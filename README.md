@@ -250,6 +250,39 @@ becomes more useful once the subset is extended (see §9).
 
 ---
 
+## 6b. First-milestone comparison (polar-view impact)
+
+`scripts/run_milestone_comparison.py` implements the first milestone of the
+research plan (see `docs/RESEARCH_PLAN.md`): it builds **three** synoptic
+map products over the subset and compares the axial dipole moment from each:
+
+- **PHI-only** — SolO vantage, PHI's native disk geometry
+- **HMI-only** — Earth vantage, HMI's **native** disk geometry (deliberately
+  *not* reprojected through the PHI grid, so the vantage comparison is not
+  circular)
+- **merged** — the smooth PHI+HMI blend on the PHI grid
+
+```bash
+python scripts/run_milestone_comparison.py
+```
+
+For each product it computes the standard axial dipole coefficient
+`g10 = (3/4π) ∮ Br sin(lat) dΩ` (`solar_pipeline/dipole.py`) under three
+polar-filling assumptions — `zero` (unobserved bins contribute nothing),
+`project` (least-squares projection of observed bins onto the dipole
+profile), `polar_extend` (caps filled with the last observed band's zonal
+mean) — with north/south decomposition, polar-cap fill fractions, and a
+per-bin max-mu confidence grid. Per-case PHI-vs-HMI calibration slopes are
+reported (`--calibrate-phi` applies them).
+
+Outputs go to `baseline_outputs/milestone/`: `.npy` grids, SFT-ready
+`synoptic_*.fits` maps (plate-carrée WCS), `milestone_dipole_comparison.csv`,
+`calibration_stats.csv`, and map plots. Validation against synthetic
+ground-truth dipole observers lives in `tests/test_milestone.py`
+(`pip install -e ".[dev]" && pytest tests/`).
+
+---
+
 ## 7. Scientific interpretation of the current baseline
 
 For the 27–28 October 2022 subset, the baseline results show:

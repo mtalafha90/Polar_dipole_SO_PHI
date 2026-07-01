@@ -14,12 +14,65 @@ from .io_utils import (
 )
 from .geometry import build_radius_arrays, estimate_mu_lat_lon
 from .blending import smooth_merge
+from .calibration import calibration_stats
 from .radial import los_to_br
 from .carrington import (
     bin_br_to_carrington,
     axial_dipole_from_carrington_grid,
     carrington_fill_fraction,
 )
+
+
+def compute_native_disk_fields(
+    smap,
+    *,
+    disk_fraction: float,
+    mu_min: float,
+    alpha: float,
+):
+    """Per-pixel Br/geometry fields for a single LOS magnetogram in its OWN
+    disk geometry (its own observer B0/L0 and its own mu) — no reprojection.
+
+    This is what an "HMI-only" Earth-view product must be built from: using
+    compute_case_fields for that would reproject HMI onto the PHI grid and
+    silently give the HMI data PHI's viewing geometry (including any polar
+    visibility advantage), making vantage-point comparisons circular.
+    """
+    crpix1 = float(smap.meta["crpix1"])
+    crpix2 = float(smap.meta["crpix2"])
+    cdelt1 = float(smap.meta["cdelt1"])
+    cdelt2 = float(smap.meta["cdelt2"])
+    rsun_arcsec = float(smap.meta.get("rsun_obs", smap.meta.get("rsun_arc")))
+    b0_deg = float(smap.meta.get("crlt_obs", 0.0))
+    l0_deg = float(smap.meta.get("crln_obs", 0.0))
+
+    _, _, dx, dy, _, rr_norm, rsun_pix = build_radius_arrays(
+        shape=smap.data.shape,
+        crpix1=crpix1,
+        crpix2=crpix2,
+        cdelt1=cdelt1,
+        cdelt2=cdelt2,
+        rsun_arcsec=rsun_arcsec,
+    )
+
+    mu, lat, lon, cmd = estimate_mu_lat_lon(
+        dx=dx, dy=dy, rsun_pix=rsun_pix, b0_deg=b0_deg, l0_deg=l0_deg
+    )
+
+    br, valid = los_to_br(smap.data, mu, mu_min=mu_min, alpha=alpha)
+    valid = valid & (rr_norm <= disk_fraction)
+
+    return {
+        "br": br,
+        "valid": valid,
+        "mu": mu,
+        "lat": lat,
+        "lon": lon,
+        "cmd": cmd,
+        "rr_norm": rr_norm,
+        "b0_deg": b0_deg,
+        "l0_deg": l0_deg,
+    }
 
 
 def compute_case_fields(
@@ -93,6 +146,7 @@ def compute_case_fields(
     return {
         "phi_blos": phi_blos,
         "hmi": hmi,
+        "hmi_on_phi": hmi_on_phi,
         "hmi_path": hmi_path,
         "phi_time": phi_time,
         "hmi_time": hmi_time,
@@ -171,6 +225,13 @@ def run_case(
         "fill_hmi": carrington_fill_fraction(count_hmi),
         "fill_merged": carrington_fill_fraction(count_merged),
     }
+
+    calib = calibration_stats(
+        phi_blos.data, fields["hmi_on_phi"].data, fields["mu"], mu_min=mu_min
+    )
+    row["calib_slope"] = calib["slope"]
+    row["calib_pearson_r"] = calib["pearson_r"]
+    row["calib_n_pixels"] = calib["n_pixels"]
 
     arrays = {
         "merged": fields["merged"],

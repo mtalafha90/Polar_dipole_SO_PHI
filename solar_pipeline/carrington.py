@@ -101,6 +101,39 @@ def bin_br_to_carrington_weighted(br, lat, lon, valid_mask, weight, nlat: int, n
     return grid_wsum, grid_weight, lat_centers, lon_centers
 
 
+def bin_max_to_carrington(values, lat, lon, valid_mask, nlat: int, nlon: int):
+    """Per-bin maximum of `values` (e.g. mu, for a polar confidence mask).
+
+    Returns a grid that is NaN where no valid pixel fell in the bin.
+    """
+    lat_edges = np.linspace(-np.pi / 2, np.pi / 2, nlat + 1)
+    lon_edges = np.linspace(0.0, 2.0 * np.pi, nlon + 1)
+
+    lat_v = lat[valid_mask]
+    lon_v = lon[valid_mask]
+    val_v = values[valid_mask]
+
+    ilat = np.digitize(lat_v, lat_edges) - 1
+    ilon = np.digitize(lon_v, lon_edges) - 1
+
+    ok = (ilat >= 0) & (ilat < nlat) & (ilon >= 0) & (ilon < nlon) & np.isfinite(val_v)
+
+    grid = np.full((nlat, nlon), -np.inf, dtype=float)
+    np.maximum.at(grid, (ilat[ok], ilon[ok]), val_v[ok])
+    grid[~np.isfinite(grid)] = np.nan
+    return grid
+
+
+def combine_max_grids(grids):
+    """Combine per-case max-quality grids into one (elementwise nanmax)."""
+    stacked = np.stack(grids)
+    finite = np.isfinite(stacked)
+    filled = np.where(finite, stacked, -np.inf)
+    out = filled.max(axis=0)
+    out[~np.any(finite, axis=0)] = np.nan
+    return out
+
+
 def combine_weighted_grids(wsum_list, weight_list):
     """Combine per-case (weighted-sum, weight) grids into one assimilated map."""
     total_wsum = np.sum(np.stack(wsum_list), axis=0)
