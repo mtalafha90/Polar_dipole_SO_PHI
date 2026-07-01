@@ -283,6 +283,33 @@ ground-truth dipole observers lives in `tests/test_milestone.py`
 
 ---
 
+## 6c. SFT experiment (Stage D)
+
+The author's 1D surface flux transport model (`sft/original_transp.py`,
+committed verbatim; Python 3 port with identical discretization in
+`solar_pipeline/sft.py` — see `sft/README.md` for the port notes) closes
+the loop from maps to flux-transport predictions:
+
+```bash
+python scripts/run_sft_from_maps.py            # after run_milestone_comparison.py
+```
+
+Each milestone map product (PHI-only, HMI-only, merged) is zonally averaged
+into an initial `B(latitude)` profile and evolved with the same SFT
+configuration (flow profiles 1–5, `--u0`, `--eta`, `--tau`, optional
+idealized cycle source via `--source on`). With the default
+`--unobserved zero`, latitudes a product never observed enter the SFT with
+zero field — so an Earth-view-only product carries its missing-polar-field
+handicap into the simulation while merged PHI+HMI input does not, which is
+precisely the experiment. Outputs (`baseline_outputs/sft/`): dipole and
+polar-cap time series per product (`sft_comparison.csv`), injected
+profiles, and a comparison figure.
+
+The port is physics-validated in `tests/test_sft.py`, including the
+analytic l=1 diffusive decay rate `2*eta/Rsun^2` recovered to <2%.
+
+---
+
 ## 7. Scientific interpretation of the current baseline
 
 For the 27–28 October 2022 subset, the baseline results show:

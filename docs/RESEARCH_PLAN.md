@@ -28,8 +28,9 @@ uncertainty and yield a more reliable dipole estimate in SFT simulations.
 | C | North/south contributions | `axial_dipole_g10` hemispheric split | done |
 | C | Polar-filling sensitivity | compare `g10_zero` / `g10_project` / `g10_polar_extend` columns | done |
 | C | Time evolution | per-case dipole series (`run_baseline_pipeline.py`) | done (proxy); extend to g10 per case when needed |
-| D | SFT baseline vs merged input | **user's own SFT code** — injection interface pending its input format | open |
-| D | Dipole buildup / reversal timing / polar-cap flux / asymmetry | comparison framework to be built around the SFT model | open |
+| D | SFT baseline vs merged input | author's 1D SFT (`sft/original_transp.py`, ported to `solar_pipeline/sft.py`) + `scripts/run_sft_from_maps.py` | done (initial-condition injection) |
+| D | Dipole buildup / reversal timing / polar-cap flux / asymmetry | `sft_comparison.csv`: g10(t), polar-cap means N/S, reversal detection per product | done |
+| D | Continuous data assimilation into the SFT (beyond IC injection) | future work | open |
 
 ## First milestone (defined in the plan)
 
