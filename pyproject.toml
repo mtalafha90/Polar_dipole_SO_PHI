@@ -18,9 +18,16 @@ dependencies = [
     "pandas>=2.0",
 ]
 
+[project.optional-dependencies]
+download = [
+    "sunpy-soar>=1.8",
+    "drms>=0.7",
+]
+
 [project.scripts]
 run-baseline-pipeline = "scripts.run_baseline_pipeline:main"
 plot-baseline-summary = "scripts.plot_baseline_summary:main"
+download-baseline-data = "scripts.download_baseline_data:main"
 
 [tool.setuptools]
 py-modules = ["baseline_config"]

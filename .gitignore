@@ -5,7 +5,5 @@ __pycache__/
 # venv
 sopyhi_env/
 
-# pipeline outputs and inputs (large/generated data)
+# pipeline outputs (regenerable)
 baseline_outputs/
-PHI/
-HMI/
