@@ -41,6 +41,7 @@ Recommended layout:
 ```text
 package/
   README.md
+  pyproject.toml
   baseline_config.py
   solar_pipeline/
     __init__.py
@@ -52,6 +53,7 @@ package/
     pipeline.py
     plotting.py
   scripts/
+    __init__.py
     run_baseline_pipeline.py
     plot_baseline_summary.py
   PHI/
@@ -66,12 +68,20 @@ package/
 
 ## 3. Required Python packages
 
-Create and activate a virtual environment, then install:
+Create and activate a virtual environment, then install the package (this
+also gives you the `run-baseline-pipeline` / `plot-baseline-summary`
+console commands, usable from any directory):
 
 ```bash
 python3 -m venv sopyhi_env
 source sopyhi_env/bin/activate
 python -m pip install --upgrade pip
+pip install -e .
+```
+
+Or, without installing the package:
+
+```bash
 pip install "sunpy[map]" reproject astropy matplotlib numpy scipy pandas
 ```
 
@@ -94,11 +104,34 @@ cd /path/to/package
 python scripts/run_baseline_pipeline.py
 ```
 
+With no flags, this reproduces **baseline v1** exactly (see §10), using the
+defaults in `baseline_config.py`. All parameters can be overridden on the
+command line:
+
+```bash
+python scripts/run_baseline_pipeline.py \
+  --phi-dir PHI --hmi-dir HMI --out-dir baseline_outputs \
+  --dates 20221027,20221028 \
+  --max-time-diff-sec 600 \
+  --r-inner 0.70 --r-outer 0.90 \
+  --disk-fraction 0.98 --mu-min 0.40 --alpha 0.80 \
+  --nlat 180 --nlon 360
+```
+
+Run `python scripts/run_baseline_pipeline.py --help` for the full list of flags.
+
 To regenerate plots only:
 
 ```bash
 python scripts/plot_baseline_summary.py
 ```
+
+This also accepts `--out-dir`, `--mu-min`, and `--alpha` (the latter two only
+affect plot titles); see `--help` for details.
+
+If installed via `pip install -e .`, the equivalent console commands
+(`run-baseline-pipeline`, `plot-baseline-summary`) work from any directory
+and accept the same flags.
 
 ---
 

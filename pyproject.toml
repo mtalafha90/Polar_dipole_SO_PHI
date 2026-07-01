@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solar-pipeline"
+version = "1.0.0"
+description = "Baseline workflow for comparing and combining Solar Orbiter/PHI-FDT and SDO/HMI line-of-sight magnetograms and estimating an approximate Carrington-style axial dipole proxy."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "sunpy[map]>=6.0",
+    "reproject>=0.13",
+    "astropy>=6.0",
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.0",
+]
+
+[project.scripts]
+run-baseline-pipeline = "scripts.run_baseline_pipeline:main"
+plot-baseline-summary = "scripts.plot_baseline_summary:main"
+
+[tool.setuptools]
+py-modules = ["baseline_config"]
+
+[tool.setuptools.packages.find]
+include = ["solar_pipeline*", "scripts*"]

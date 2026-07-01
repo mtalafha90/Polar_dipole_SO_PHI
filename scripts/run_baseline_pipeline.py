@@ -1,12 +1,14 @@
-from pathlib import Path
+import argparse
 import sys
-from pathlib import Path
 import warnings
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 from sunpy.util.exceptions import SunpyMetadataWarning
 
 warnings.filterwarnings("ignore", category=SunpyMetadataWarning)
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-import pandas as pd
 
 from baseline_config import (
     PHI_DIR,
@@ -27,12 +29,39 @@ from solar_pipeline.pipeline import run_case, summarize_dataframe
 from solar_pipeline.plotting import make_baseline_plots
 
 
-def main():
-    OUT_DIR.mkdir(exist_ok=True, parents=True)
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run the PHI-HMI baseline pipeline. Defaults reproduce baseline v1 (see README)."
+    )
+    parser.add_argument("--phi-dir", type=Path, default=PHI_DIR, help="Directory containing PHI blos FITS files")
+    parser.add_argument("--hmi-dir", type=Path, default=HMI_DIR, help="Directory containing HMI magnetogram FITS files")
+    parser.add_argument("--out-dir", type=Path, default=OUT_DIR, help="Directory to write pipeline outputs")
+    parser.add_argument(
+        "--dates",
+        type=str,
+        default=",".join(sorted(ONLY_DATES)),
+        help="Comma-separated list of YYYYMMDD dates to include",
+    )
+    parser.add_argument("--max-time-diff-sec", type=float, default=MAX_TIME_DIFF_SEC)
+    parser.add_argument("--r-inner", type=float, default=R_INNER)
+    parser.add_argument("--r-outer", type=float, default=R_OUTER)
+    parser.add_argument("--disk-fraction", type=float, default=DISK_FRACTION)
+    parser.add_argument("--mu-min", type=float, default=MU_MIN)
+    parser.add_argument("--alpha", type=float, default=ALPHA)
+    parser.add_argument("--nlat", type=int, default=NLAT)
+    parser.add_argument("--nlon", type=int, default=NLON)
+    return parser.parse_args()
 
-    phi_blos_files = sorted(PHI_DIR.glob("solo_L2_phi-fdt-blos_*.fits"))
-    phi_blos_files = [f for f in phi_blos_files if any(d in f.name for d in ONLY_DATES)]
-    hmi_files = sorted(HMI_DIR.glob("hmi.M_720s.*.magnetogram.fits"))
+
+def main():
+    args = parse_args()
+    only_dates = {d.strip() for d in args.dates.split(",") if d.strip()}
+
+    args.out_dir.mkdir(exist_ok=True, parents=True)
+
+    phi_blos_files = sorted(args.phi_dir.glob("solo_L2_phi-fdt-blos_*.fits"))
+    phi_blos_files = [f for f in phi_blos_files if any(d in f.name for d in only_dates)]
+    hmi_files = sorted(args.hmi_dir.glob("hmi.M_720s.*.magnetogram.fits"))
 
     if not phi_blos_files:
         raise RuntimeError("No PHI blos files found.")
@@ -52,14 +81,14 @@ def main():
             row, arrays = run_case(
                 phi_blos_path,
                 hmi_index,
-                max_time_diff_sec=MAX_TIME_DIFF_SEC,
-                r_inner=R_INNER,
-                r_outer=R_OUTER,
-                disk_fraction=DISK_FRACTION,
-                mu_min=MU_MIN,
-                alpha=ALPHA,
-                nlat=NLAT,
-                nlon=NLON,
+                max_time_diff_sec=args.max_time_diff_sec,
+                r_inner=args.r_inner,
+                r_outer=args.r_outer,
+                disk_fraction=args.disk_fraction,
+                mu_min=args.mu_min,
+                alpha=args.alpha,
+                nlat=args.nlat,
+                nlon=args.nlon,
             )
             rows.append(row)
 
@@ -71,11 +100,10 @@ def main():
                 f"dip_merged = {row['dip_merged']:.6f}"
             )
 
-            case_dir = OUT_DIR / Path(phi_blos_path).stem
+            case_dir = args.out_dir / Path(phi_blos_path).stem
             case_dir.mkdir(exist_ok=True, parents=True)
 
             save_fits(case_dir / "merged_smooth_los.fits", arrays["merged"].astype("float32"), arrays["phi_header"])
-            import numpy as np
             np.save(case_dir / "grid_phi.npy", arrays["grid_phi"])
             np.save(case_dir / "grid_hmi.npy", arrays["grid_hmi"])
             np.save(case_dir / "grid_merged.npy", arrays["grid_merged"])
@@ -87,9 +115,9 @@ def main():
             rows.append({"phi_blos_file": phi_blos_path.name, "error": str(exc)})
 
     df = pd.DataFrame(rows)
-    full_csv = OUT_DIR / "baseline_all_cases.csv"
-    summary_csv = OUT_DIR / "baseline_summary.csv"
-    notes_txt = OUT_DIR / "baseline_summary_notes.txt"
+    full_csv = args.out_dir / "baseline_all_cases.csv"
+    summary_csv = args.out_dir / "baseline_summary.csv"
+    notes_txt = args.out_dir / "baseline_summary_notes.txt"
 
     df.to_csv(full_csv, index=False)
 
@@ -122,7 +150,7 @@ def main():
 
     with open(notes_txt, "w") as f:
         f.write("Baseline pipeline summary\n")
-        f.write(f"R_INNER={R_INNER}, R_OUTER={R_OUTER}, MU_MIN={MU_MIN}, ALPHA={ALPHA}\n\n")
+        f.write(f"R_INNER={args.r_inner}, R_OUTER={args.r_outer}, MU_MIN={args.mu_min}, ALPHA={args.alpha}\n\n")
         for col, s in stats.items():
             f.write(
                 f"{col}: mean={s['mean']:.6f}, std={s['std']:.6f}, "
@@ -135,7 +163,7 @@ def main():
     print(f"Saved notes        : {notes_txt.resolve()}")
 
     print("\nBaseline summary")
-    print(f"R_INNER={R_INNER}, R_OUTER={R_OUTER}, MU_MIN={MU_MIN}, ALPHA={ALPHA}")
+    print(f"R_INNER={args.r_inner}, R_OUTER={args.r_outer}, MU_MIN={args.mu_min}, ALPHA={args.alpha}")
     for col, s in stats.items():
         print(
             f"{col}: mean={s['mean']:.6f}, std={s['std']:.6f}, "
@@ -143,7 +171,9 @@ def main():
         )
 
     if len(good) > 0:
-        make_baseline_plots(good, OUT_DIR / "plots", title_suffix=f" (MU_MIN={MU_MIN}, alpha={ALPHA})")
+        make_baseline_plots(
+            good, args.out_dir / "plots", title_suffix=f" (MU_MIN={args.mu_min}, alpha={args.alpha})"
+        )
 
 
 if __name__ == "__main__":
