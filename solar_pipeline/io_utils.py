@@ -55,10 +55,37 @@ def parse_hmi_time(path: Path) -> datetime:
     return datetime.strptime(m.group(1) + m.group(2), "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
 
 
+def _load_map_patched_units(path: Path) -> sunpy.map.Map:
+    """Fallback loader for files with incomplete WCS metadata.
+
+    Some PHI-FDT L2 observing programs ship without CUNIT1/CUNIT2, which
+    sunpy >= 8 treats as a hard error (older sunpy only warned). Both PHI
+    and HMI use helioprojective coordinates in arcsec, so fill the missing
+    units and build the map from data + patched header. Existing keywords
+    are never overridden.
+    """
+    with fits.open(path) as hdul:
+        for hdu in hdul:
+            data = getattr(hdu, "data", None)
+            if data is not None and getattr(data, "ndim", 0) == 2:
+                header = hdu.header.copy()
+                for key in ("cunit1", "cunit2"):
+                    if not str(header.get(key, "")).strip():
+                        header[key] = "arcsec"
+                return sunpy.map.Map(data, header)
+    raise ValueError(f"No 2D image HDU found in {path}")
+
+
 def load_map(path: Path) -> sunpy.map.Map:
     if not path.exists():
         raise FileNotFoundError(f"File not found: {path}")
-    return sunpy.map.Map(path)
+    try:
+        return sunpy.map.Map(path)
+    except Exception as exc:
+        msg = str(exc).lower()
+        if "not present in metadata" in msg or "coordinate units" in msg:
+            return _load_map_patched_units(path)
+        raise
 
 
 def build_hmi_time_index(hmi_files: list[Path]) -> list[tuple[Path, datetime]]:
