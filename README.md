@@ -1,22 +1,34 @@
-# PHI–HMI Baseline Pipeline
+# SO/PHI + SDO/HMI Magnetogram Merging and Axial Dipole Pipeline
 
-This package provides a baseline workflow for comparing and combining **Solar Orbiter/PHI-FDT** and **SDO/HMI** line-of-sight magnetograms over the **27–28 October 2022** subset, then estimating an **approximate Carrington-style axial dipole proxy**.
+This package builds merged **Solar Orbiter/PHI-FDT** + **SDO/HMI**
+line-of-sight magnetogram products, estimates the Sun's **axial dipole
+moment (g₁₀)** from them, and drives a **1D surface flux transport (SFT)**
+model from the resulting maps. Its purpose is to test whether adding Solar
+Orbiter's out-of-ecliptic magnetic vantage improves axial-dipole estimates
+and SFT predictions compared with Earth-view (HMI) data alone.
 
-The current codebase is intended as a **working baseline version** for development and controlled experiments. It includes:
+The full research plan is in [`docs/RESEARCH_PLAN.md`](docs/RESEARCH_PLAN.md);
+the paper skeleton with measured results is in
+[`docs/paper_outline.md`](docs/paper_outline.md).
 
-- PHI/HMI time matching
-- WCS-based reprojection of HMI onto the PHI grid
-- smooth radial blending of PHI and HMI maps
-- approximate LOS-to-radial conversion
-- Carrington-style latitude–longitude binning
-- approximate axial dipole estimation
-- CSV summaries and diagnostic plots
+The pipeline provides:
+
+- PHI/HMI time matching and WCS-based reprojection
+- smooth radial blending of PHI and HMI into a merged LOS map
+- approximate LOS-to-radial conversion (`Br ≈ Blos / mu^alpha`)
+- Carrington-style latitude–longitude binning with central-meridian weighting
+- **three synoptic products** (PHI-only, HMI-only native, merged) with the
+  standard axial dipole g₁₀ under selectable polar-filling assumptions
+- PHI-vs-HMI cross-calibration and drift diagnostics
+- comparison against standard HMI synoptic charts
+- an SFT model (author's code, Python 3 port) driven by the merged maps
+- CSV summaries, diagnostic plots, and a synthetic-data test suite
 
 ---
 
-## 1. Current baseline method
+## 1. Baseline method and locked defaults
 
-The baseline parameters are locked to:
+The per-case baseline parameters are locked as **baseline v1** (see §10):
 
 - **Smooth blend:** `R_INNER = 0.70`, `R_OUTER = 0.90`
 - **Radial-field approximation:** `Br ≈ Blos / mu^0.8`
@@ -24,7 +36,7 @@ The baseline parameters are locked to:
 - **Disk mask:** `DISK_FRACTION = 0.98`
 - **Grid:** `NLAT = 180`, `NLON = 360`
 - **PHI/HMI matching tolerance:** `MAX_TIME_DIFF_SEC = 600`
-- **Subset:** `20221027`, `20221028`
+- **Default subset:** `20221027`, `20221028`
 
 These settings were chosen after sensitivity tests showed that:
 
@@ -32,11 +44,12 @@ These settings were chosen after sensitivity tests showed that:
 - `MU_MIN = 0.40` is a practical compromise between limb amplification and over-clipping,
 - `alpha = 0.80` is a conservative smoother alternative to the standard `1/mu` correction.
 
+All scripts accept flag overrides, so experiments never require editing
+`baseline_config.py`.
+
 ---
 
 ## 2. Folder structure
-
-Recommended layout:
 
 ```text
 package/
@@ -45,23 +58,36 @@ package/
   baseline_config.py
   solar_pipeline/
     __init__.py
-    io_utils.py
-    geometry.py
-    blending.py
-    radial.py
-    carrington.py
-    pipeline.py
-    plotting.py
+    io_utils.py          # loading, time parsing, date-range spec, synoptic FITS export
+    geometry.py          # disk geometry, mu/lat/lon, CROTA2 / PC-matrix rotation
+    blending.py          # cosine-taper PHI+HMI radial blend
+    radial.py            # LOS -> Br approximation
+    calibration.py       # PHI-vs-HMI cross-calibration regression
+    carrington.py        # Carrington binning, CM weighting, multi-case assimilation
+    dipole.py            # standard g10 (fill modes, N/S split), CEA g10
+    pipeline.py          # per-case orchestration; native-geometry path
+    plotting.py          # baseline + Carrington-map plots
+    sft.py               # 1D surface flux transport model (Python 3 port)
   scripts/
     __init__.py
-    run_baseline_pipeline.py
-    plot_baseline_summary.py
-    alpha_sensitivity_sweep.py
-    run_synoptic_assimilation.py
-    download_baseline_data.py
+    download_baseline_data.py     # fetch PHI (SOAR) + HMI (JSOC) inputs
+    run_baseline_pipeline.py      # per-case dipole proxy table
+    plot_baseline_summary.py      # regenerate baseline plots
+    alpha_sensitivity_sweep.py    # sweep ALPHA
+    run_synoptic_assimilation.py  # single merged synoptic map
+    run_milestone_comparison.py   # PHI / HMI-native / merged + g10 comparison
+    compare_reference_dipole.py   # g10 vs a standard HMI synoptic chart
+    plot_calibration_drift.py     # calibration slope/r vs time, distance, separation
+    run_sft_from_maps.py          # SFT experiment driven by the maps
+  sft/
+    original_transp.py   # author's original SFT code (verbatim, Python 2)
+    README.md            # provenance + port notes
+  tests/                 # pytest suite (synthetic-data validation)
+  docs/
+    RESEARCH_PLAN.md
+    paper_outline.md
   PHI/
     solo_L2_phi-fdt-blos_*.fits
-    solo_L2_phi-fdt-icnt_*.fits
   HMI/
     hmi.M_720s.*.magnetogram.fits
   baseline_outputs/
@@ -69,67 +95,70 @@ package/
 
 ---
 
-## 3. Required Python packages
+## 3. Installation
 
 Create and activate a virtual environment, then install the package (this
-also gives you the `run-baseline-pipeline` / `plot-baseline-summary`
-console commands, usable from any directory):
+also provides the console commands listed below, usable from any directory):
 
 ```bash
 python3 -m venv sopyhi_env
 source sopyhi_env/bin/activate
 python -m pip install --upgrade pip
-pip install -e .
+pip install -e .            # core
+pip install -e ".[download]"  # + SOAR/JSOC download support (sunpy-soar, drms, requests)
+pip install -e ".[dev]"       # + pytest
 ```
 
-Or, without installing the package:
+Console commands installed by `pip install -e .`:
+`run-baseline-pipeline`, `plot-baseline-summary`, `download-baseline-data`,
+`run-milestone-comparison`, `run-sft-from-maps`. The remaining scripts
+(`alpha_sensitivity_sweep`, `run_synoptic_assimilation`,
+`compare_reference_dipole`, `plot_calibration_drift`) are run as
+`python scripts/<name>.py`.
+
+Without installing the package:
 
 ```bash
 pip install "sunpy[map]" reproject astropy matplotlib numpy scipy pandas
 ```
 
-If SunPy metadata warnings appear but the pipeline still completes successfully, they can be ignored during development or suppressed in the run script.
+Requires Python ≥ 3.10. Under sunpy ≥ 8, PHI-FDT files whose L2 headers lack
+`CUNIT1/2` are repaired automatically on load.
 
 ---
 
 ## 3a. Downloading the input data
 
-The input magnetograms are not generated by this package — they come from the
-mission archives:
+Input magnetograms come from the mission archives:
 
 - **PHI**: `solo_L2_phi-fdt-blos_*.fits` from the ESA Solar Orbiter Archive
   (SOAR, `soar.esac.esa.int`)
 - **HMI**: `hmi.M_720s.*.magnetogram.fits` from JSOC (`jsoc.stanford.edu`)
 
-A downloader script fetches both for the baseline date range. Install the
-optional download dependencies first:
-
 ```bash
 pip install -e ".[download]"
-python scripts/download_baseline_data.py
+python scripts/download_baseline_data.py --start 2022-10-27 --end 2022-10-29
 ```
 
-By default it downloads all PHI-FDT blos L2 files for 27–28 Oct 2022 from
-SOAR, then for **each** PHI file queries JSOC for the nearest `hmi.M_720s`
-record in time and downloads only those magnetograms (rather than the full
-12-minute-cadence series). HMI records further than `MAX_TIME_DIFF_SEC` from
-any PHI time produce a warning, matching the pipeline's own rejection rule.
+It downloads all PHI-FDT blos L2 files in the date range from SOAR, then for
+**each** PHI file queries JSOC for the nearest `hmi.M_720s` record and
+downloads only those magnetograms (not the full 12-minute-cadence series).
+HMI records further than `MAX_TIME_DIFF_SEC` from any PHI time produce a
+warning, matching the pipeline's own rejection rule.
 
-Useful flags: `--start/--end` for other date ranges, `--phi-only` /
-`--hmi-only` to re-run one half, `--hmi-window-min` for the JSOC query
-window. Downloads are idempotent — existing files are kept.
+Useful flags: `--start/--end`, `--phi-only` / `--hmi-only`,
+`--hmi-window-min`. Downloads are idempotent (existing files kept).
 
-The script needs direct network access to `soar.esac.esa.int` and
-`jsoc.stanford.edu`. HMI records that are online at JSOC are fetched
-directly from SUMS over HTTP with no registration; the DRMS keywords (WCS,
-observer geometry, CROTA2) are queried alongside and written into each
-file's header, since raw SUMS segments carry no metadata of their own.
-Only records that have gone offline need a real export request, for which
-you must pass `--jsoc-email` (or set `JSOC_EXPORT_EMAIL`) with an address
-registered at http://jsoc.stanford.edu/ajax/register_email.html.
+Online JSOC records are fetched directly from SUMS over HTTP with **no
+registration**; the DRMS keywords (WCS, observer geometry, CROTA2) are
+queried alongside and written into each file's header, since raw SUMS
+segments carry no metadata of their own. Only records that have gone offline
+need a real export request — pass `--jsoc-email` (or set
+`JSOC_EXPORT_EMAIL`) with an address registered at
+http://jsoc.stanford.edu/ajax/register_email.html.
 
-HMI files downloaded before this header injection existed can be repaired
-in place (no re-download) with:
+HMI files downloaded before header injection existed can be repaired in
+place (no re-download):
 
 ```bash
 python scripts/download_baseline_data.py --fix-headers
@@ -137,24 +166,17 @@ python scripts/download_baseline_data.py --fix-headers
 
 ---
 
-## 4. How to run
+## 4. Running the per-case baseline
 
-Always run from the **package root**, i.e. the directory containing:
-
-- `baseline_config.py`
-- `solar_pipeline/`
-- `scripts/`
-
-Example:
+Always run from the **package root** (the directory containing
+`baseline_config.py`, `solar_pipeline/`, and `scripts/`).
 
 ```bash
-cd /path/to/package
 python scripts/run_baseline_pipeline.py
 ```
 
-With no flags, this reproduces **baseline v1** exactly (see §10), using the
-defaults in `baseline_config.py`. All parameters can be overridden on the
-command line:
+With no flags this reproduces **baseline v1** exactly. All parameters can be
+overridden:
 
 ```bash
 python scripts/run_baseline_pipeline.py \
@@ -166,218 +188,211 @@ python scripts/run_baseline_pipeline.py \
   --nlat 180 --nlon 360
 ```
 
-Run `python scripts/run_baseline_pipeline.py --help` for the full list of flags.
-
 `--dates` (all scripts) accepts single days (`20221027`), comma lists,
-inclusive ranges (`20221017-20221113`), or `all` to process every file
-present — use ranges for full-Carrington-rotation runs.
+inclusive ranges (`20221017-20221113`), or `all` — use ranges for
+full-Carrington-rotation runs.
 
-To regenerate plots only:
+To regenerate plots only: `python scripts/plot_baseline_summary.py`.
+
+Outputs land in `baseline_outputs/`: `baseline_all_cases.csv`,
+`baseline_summary.csv`, `baseline_summary_notes.txt`, per-case grids/maps,
+and `plots/` (dipole series, offsets, time differences).
+
+---
+
+## 5. The full workflow
+
+The end-to-end analysis, in order (defaults reproduce the CR 2264 study):
 
 ```bash
-python scripts/plot_baseline_summary.py
+# 1. per-case baseline dipole proxy table
+python scripts/run_baseline_pipeline.py    --dates 20221017-20221113
+
+# 2. three synoptic products (PHI / HMI-native / merged) + g10 comparison
+python scripts/run_milestone_comparison.py --dates 20221017-20221113 \
+       --calibrate-phi --quiet-sun-max-g 50
+
+# 3. diagnostics on the milestone outputs
+python scripts/plot_calibration_drift.py
+python scripts/compare_reference_dipole.py --car-rot 2264
+
+# 4. SFT experiment driven by the merged maps
+python scripts/run_sft_from_maps.py --balance-flux                       # decay
+python scripts/run_sft_from_maps.py --balance-flux --source on --tau 10 --years 22  # cycle
 ```
-
-This also accepts `--out-dir`, `--mu-min`, and `--alpha` (the latter two only
-affect plot titles); see `--help` for details.
-
-If installed via `pip install -e .`, the equivalent console commands
-(`run-baseline-pipeline`, `plot-baseline-summary`) work from any directory
-and accept the same flags.
 
 ---
 
-## 5. Main outputs
+## 6. What each stage does
 
-The baseline pipeline writes results into:
+### 6a. Per-case pipeline (`run_baseline_pipeline.py`)
 
-```text
-baseline_outputs/
-```
+For each PHI LOS magnetogram in the subset: parse its time, find the nearest
+HMI record (reject if `Δt > MAX_TIME_DIFF_SEC`), reproject HMI onto the PHI
+grid, build a smooth merged LOS map by radial cosine weighting, estimate
+heliographic coordinates, convert LOS to approximate radial field
+(`Br ≈ Blos / mu^alpha`), bin onto a Carrington grid, and compute an axial
+dipole proxy for PHI/HMI/merged.
 
-Main files:
+### 6b. Optional single-tool scripts
 
-- `baseline_all_cases.csv` — full case table
-- `baseline_summary.csv` — compact summary table
-- `baseline_summary_notes.txt` — text summary of campaign statistics
-- `plots/dipole_series.png` — PHI/HMI/merged dipole time series
-- `plots/dipole_offsets.png` — merged-minus-PHI and merged-minus-HMI offsets
-- `plots/time_differences.png` — PHI/HMI time offsets
+- **Alpha sensitivity sweep** — re-runs the pipeline across `ALPHA` values
+  and reports how the dipole estimates change
+  (`baseline_outputs/alpha_sweep/`):
 
-Per-case folders also contain:
+  ```bash
+  python scripts/alpha_sensitivity_sweep.py --alphas 0.6,0.7,0.8,0.9,1.0
+  ```
 
-- merged smooth LOS maps
-- binned Carrington-style grids
-- latitude/longitude arrays
+- **Synoptic assimilation** — combines cases into one CM-weighted merged
+  synoptic map, each bin weighted by `cos(cmd)^n`
+  (`baseline_outputs/synoptic/`):
 
----
+  ```bash
+  python scripts/run_synoptic_assimilation.py
+  ```
 
-## 6. What the pipeline does
+### 6c. Milestone comparison (`run_milestone_comparison.py`)
 
-For each PHI LOS magnetogram in the selected subset:
-
-1. parse PHI observation time
-2. find nearest HMI magnetogram in time
-3. reject the match if `Δt > MAX_TIME_DIFF_SEC`
-4. reproject HMI onto the PHI grid
-5. build a **smooth merged LOS map** using radial cosine weighting
-6. estimate heliographic coordinates on the visible disk
-7. convert LOS field to approximate radial field using
-   `Br ≈ Blos / mu^alpha`
-8. bin the visible-disk radial field onto a Carrington-style grid
-9. compute an approximate axial dipole proxy
-10. save results and diagnostic plots
-
----
-
-## 6a. Optional analysis tools
-
-Two additional scripts build on the baseline pipeline without changing its
-locked defaults:
-
-**Alpha sensitivity sweep** — re-runs the pipeline across a range of `ALPHA`
-values (the exponent in `Br ≈ Blos / mu^alpha`) and reports how the PHI/HMI/
-merged dipole estimates change, to help evaluate a future default:
-
-```bash
-python scripts/alpha_sensitivity_sweep.py --alphas 0.6,0.7,0.8,0.9,1.0
-```
-
-Outputs go to `baseline_outputs/alpha_sweep/` (`alpha_sweep_all_cases.csv`,
-`alpha_sweep_summary.csv`, `plots/alpha_sensitivity.png`). This tool does not
-modify `baseline_config.py` — picking a new default alpha is a separate,
-deliberate decision once real sensitivity results are available.
-
-**Synoptic map assimilation** — combines several visible-disk cases from the
-selected subset into one Carrington-style synoptic map. Each case's
-contribution to a given bin is weighted by `cos(cmd)^n`, where `cmd` is that
-pixel's angular distance from central meridian at observation time (`n` set
-by `--cm-weight-power`, default 1) — near-central-meridian samples are
-trusted more than near-limb samples when cases overlap:
-
-```bash
-python scripts/run_synoptic_assimilation.py
-```
-
-Outputs go to `baseline_outputs/synoptic/` (`synoptic_grid.npy`,
-`synoptic_weight.npy`, `synoptic_summary.txt`, `plots/synoptic_map.png`).
-With only 1–2 days of data this still leaves large gaps in longitude; it
-becomes more useful once the subset is extended (see §9).
-
----
-
-## 6b. First-milestone comparison (polar-view impact)
-
-`scripts/run_milestone_comparison.py` implements the first milestone of the
-research plan (see `docs/RESEARCH_PLAN.md`): it builds **three** synoptic
-map products over the subset and compares the axial dipole moment from each:
+Builds **three** synoptic map products and compares their axial dipole:
 
 - **PHI-only** — SolO vantage, PHI's native disk geometry
 - **HMI-only** — Earth vantage, HMI's **native** disk geometry (deliberately
   *not* reprojected through the PHI grid, so the vantage comparison is not
-  circular)
+  circular; HMI's ~180° `CROTA2` camera rotation is honored)
 - **merged** — the smooth PHI+HMI blend on the PHI grid
-
-```bash
-python scripts/run_milestone_comparison.py
-```
 
 For each product it computes the standard axial dipole coefficient
 `g10 = (3/4π) ∮ Br sin(lat) dΩ` (`solar_pipeline/dipole.py`) under three
 polar-filling assumptions — `zero` (unobserved bins contribute nothing),
-`project` (least-squares projection of observed bins onto the dipole
-profile), `polar_extend` (caps filled with the last observed band's zonal
-mean) — with north/south decomposition, polar-cap fill fractions, and a
-per-bin max-mu confidence grid. Per-case PHI-vs-HMI calibration slopes are
-reported (`--calibrate-phi` applies them).
+`project` (least-squares projection onto the dipole profile), `polar_extend`
+(caps filled with the last observed band's zonal mean) — with north/south
+decomposition, polar-cap fill fractions, and a per-bin max-mu confidence
+grid. Per-case PHI-vs-HMI calibration slopes are reported; `--calibrate-phi`
+applies them, guarded by `--calib-min-r` (default 0.5) so an uncorrelated
+fit never rescales the maps.
 
-The comparison table also contains `*_common` rows (each product's dipole
-recomputed on the intersection of all products' observed bins, isolating
-vantage/calibration effects from longitude-coverage effects) and, with
-`--quiet-sun-max-g <G>`, `*_quiet` / `*_quiet_common` rows that exclude
-strong-field bins — active regions are where the radial-field assumption
-fails and the two vantages disagree most, so the quiet-Sun dipole is the
-cleanest cross-vantage comparison.
+The table also reports:
 
-Outputs go to `baseline_outputs/milestone/`: `.npy` grids, SFT-ready
+- `*_common` rows — each product's dipole on the intersection of all
+  products' observed bins, isolating vantage/calibration effects from
+  longitude-coverage effects;
+- `*_quiet` / `*_quiet_common` rows (with `--quiet-sun-max-g <G>`) —
+  strong-field bins excluded, since active regions are where the
+  radial-field assumption fails and the vantages disagree most;
+- a **map-space correlation** table (`map_correlations.csv`) between
+  products on the common support — a decisive orientation/consistency check.
+
+Outputs (`baseline_outputs/milestone/`): `.npy` grids, SFT-ready
 `synoptic_*.fits` maps (plate-carrée WCS), `milestone_dipole_comparison.csv`,
-`calibration_stats.csv`, and map plots. Validation against synthetic
-ground-truth dipole observers lives in `tests/test_milestone.py`
-(`pip install -e ".[dev]" && pytest tests/`).
+`calibration_stats.csv`, `map_correlations.csv`, and map plots.
 
----
+### 6d. Calibration drift and reference checks
 
-## 6c. SFT experiment (Stage D)
+- `plot_calibration_drift.py` plots the PHI-vs-HMI slope and Pearson r vs
+  time (colored by hour of day), vs SolO–Sun distance, and vs SolO–Earth
+  longitude separation, and prints a trend/cluster summary
+  (`baseline_outputs/milestone/plots/calibration_drift.png`).
+- `compare_reference_dipole.py` computes g₁₀ from a standard HMI synoptic
+  chart (local FITS via `--reference`, or fetched by
+  `--car-rot <N>` from `hmi.synoptic_mr_polfil_720s`) and tabulates every
+  milestone product/fill-mode against it
+  (`reference_dipole_comparison.csv`).
+
+### 6e. SFT experiment (`run_sft_from_maps.py`)
 
 The author's 1D surface flux transport model (`sft/original_transp.py`,
-committed verbatim; Python 3 port with identical discretization in
-`solar_pipeline/sft.py` — see `sft/README.md` for the port notes) closes
-the loop from maps to flux-transport predictions:
-
-```bash
-python scripts/run_sft_from_maps.py            # after run_milestone_comparison.py
-```
-
-Each milestone map product (PHI-only, HMI-only, merged) is zonally averaged
-into an initial `B(latitude)` profile and evolved with the same SFT
-configuration (flow profiles 1–5, `--u0`, `--eta`, `--tau`, optional
-idealized cycle source via `--source on`). With the default
-`--unobserved zero`, latitudes a product never observed enter the SFT with
+committed verbatim; identical-discretization Python 3 port in
+`solar_pipeline/sft.py`, see `sft/README.md`) closes the loop from maps to
+flux-transport predictions. Each product is zonally averaged into an initial
+`B(latitude)` profile and evolved under the same SFT configuration (flow
+profiles 1–5, `--u0`, `--eta`, `--tau`, optional cycle source via
+`--source on`, `--balance-flux` to remove net injected flux). With the
+default `--unobserved zero`, latitudes a product never observed enter with
 zero field — so an Earth-view-only product carries its missing-polar-field
 handicap into the simulation while merged PHI+HMI input does not, which is
-precisely the experiment. Outputs (`baseline_outputs/sft/`): dipole and
-polar-cap time series per product (`sft_comparison.csv`), injected
-profiles, and a comparison figure.
+precisely the experiment.
 
-The port is physics-validated in `tests/test_sft.py`, including the
-analytic l=1 diffusive decay rate `2*eta/Rsun^2` recovered to <2%.
+Outputs (`baseline_outputs/sft/`): dipole and polar-cap time series per
+product (`sft_comparison.csv`), reversal timing (`sft_reversals.csv`),
+injected profiles, and a comparison figure. The port is physics-validated in
+`tests/test_sft.py`, including the analytic l=1 diffusive decay rate
+`2·eta/Rsun²` recovered to <2%.
 
 ---
 
-## 7. Scientific interpretation of the current baseline
+## 7. Results on the CR 2264 subset (Oct 27 – Nov 3, 2022)
 
-For the 27–28 October 2022 subset, the baseline results show:
+Measured from 24 PHI-FDT cases matched to `hmi.M_720s` (per-case calibration
+applied, quiet-Sun threshold 50 G):
 
-- PHI and HMI LOS maps agree well after reprojection
-- smooth blending is better behaved than a hard radial replacement
-- the merged dipole is typically **intermediate between PHI and HMI**
-- the merged dipole is often **closer to HMI than to PHI**
-- the merged series is **more stable** than either PHI or HMI alone
+- **Consistency:** map-space correlation PHI vs HMI = **0.89** on common
+  support; the two vantages agree on the axial dipole to **~0.05 G** where
+  they see the same bins (zero mode: PHI −0.18 vs HMI −0.23 G).
+- **Reference accuracy:** against the standard polar-filled HMI synoptic
+  chart (g₁₀ = **+0.65 G**), the PHI-informed product (project mode) agrees
+  to **+0.04 G (6%)**, while the same-pipeline Earth-view product misses by
+  ~5× more — the accuracy ordering follows polar coverage (PHI 22% north-cap
+  fill vs HMI 18%).
+- **SFT impact:** PHI-informed input injects a north polar-cap field of
+  **+1.80 G** vs **+0.22 G** for HMI-only, and evolves to an asymptotic
+  dipole of **+3.29 G vs +1.06 G** (factor ~3). With a cycle source, the
+  first polar reversal shifts by **1.26 yr** (3.72 vs 2.46 yr) from the
+  added polar constraint.
+- **Calibration:** the PHI/HMI slope declines monotonically 0.75 → 0.50 over
+  eight days, tracking SolO–Sun distance nearly linearly (consistent with
+  resolution-dependent flux loss); a late-UT observing-program cluster sits
+  below that trend.
 
-This baseline should therefore be treated as a **working reference implementation**, not as the final physical model.
+Two systematics were found and fixed during this study and are worth
+flagging for anyone building direct-geometry synoptic maps: HMI's ~180°
+`CROTA2` (ignoring it mirrors the map between hemispheres and flips the sign
+of g₁₀), and the absence of WCS metadata in raw JSOC SUMS segments (injected
+on download / `--fix-headers`).
 
 ---
 
 ## 8. Current limitations
 
-The main limitations are physical rather than geometric:
-
-- `Br ≈ Blos / mu^alpha` is only an approximation; `ALPHA` itself has not been re-validated against real sensitivity results (see `scripts/alpha_sensitivity_sweep.py` in §6a)
-- no full vector inversion is used
-- only the visible disk is used at a time — `scripts/run_synoptic_assimilation.py` (§6a) combines multiple cases with central-meridian weighting, but with only 1–2 days of data it still leaves large longitude gaps
-- metadata cleanup could still be improved for completely warning-free runs
+- `Br ≈ Blos / mu^alpha` is only an approximation; the cross-vantage
+  disagreement concentrates in active-region bins where it fails (hence the
+  quiet-Sun diagnostic). No full vector inversion is used.
+- Coverage: eight days ≈ 105° of longitude drift per vantage; full-CR
+  coverage awaits denser PHI synoptic programs.
+- Fill-mode dependence is the largest single uncertainty on *absolute* g₁₀;
+  differential (product-vs-product) statements are robust against it.
+- The calibration-distance correlation is consistent-with but not yet
+  confirmed (the degrade-HMI-to-PHI-resolution test is planned).
+- The SFT model is 1D (axisymmetric); longitude-dependent assimilation is
+  future work.
 
 ---
 
-## 9. Recommended next steps
+## 9. Status and next steps
 
-Good next directions include:
+Done and validated on real data:
 
-- ~~improving the LOS-to-radial conversion~~ — sensitivity-sweep tooling added (§6a); picking a new `ALPHA` default still needs a real run against PHI/HMI data
-- ~~assimilating multiple visible-disk maps into a fuller Carrington map~~ — done via central-meridian-weighted assimilation (§6a)
-- extending the analysis beyond 27–28 Oct 2022
-- ~~adding a command-line interface for cleaner execution~~ — done (§4)
-- ~~packaging the code formally for reuse~~ — done (`pyproject.toml`, §3)
+- ~~command-line interface~~ (§4) and ~~formal packaging~~ (`pyproject.toml`, §3)
+- ~~multi-map Carrington assimilation~~ with central-meridian weighting (§6b–c)
+- ~~standard g₁₀ with polar-filling options and N/S split~~ (`dipole.py`)
+- ~~non-circular HMI-native baseline, calibration, confidence masks~~ (§6c)
+- ~~SFT model port and map-driven experiment~~ (§6e)
+- ~~full-Carrington-rotation run + diagnostics~~ (§6d, §7)
+- ~~reference comparison, reversal timing, paper outline~~ (§6d–e, `docs/`)
+
+Remaining, data-gated rather than code-gated:
+
+- **Degrade-HMI resolution test** — confirm the calibration-distance
+  correlation.
+- **2025 high-B₀ window** — the decisive polar test, where Solar Orbiter's
+  ~17° inclination makes the pole itself visible (see the "Next campaign"
+  section of `docs/RESEARCH_PLAN.md`).
 
 ---
 
 ## 10. Version note
 
-This README describes the current **baseline v1** workflow:
-
-- `R_INNER = 0.70`
-- `R_OUTER = 0.90`
-- `MU_MIN = 0.40`
-- `ALPHA = 0.80`
-
-This version should be kept unchanged as the reference baseline before introducing further physics updates.
+The per-case **baseline v1** defaults (`R_INNER = 0.70`, `R_OUTER = 0.90`,
+`MU_MIN = 0.40`, `ALPHA = 0.80`) are kept fixed as the reference
+configuration. Analysis scripts layer on top via flags without changing
+them, so the baseline remains reproducible while experiments proceed.
