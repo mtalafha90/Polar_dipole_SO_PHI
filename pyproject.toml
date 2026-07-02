@@ -20,8 +20,9 @@ dependencies = [
 
 [project.optional-dependencies]
 download = [
-    "sunpy-soar>=1.8",
+    "sunpy-soar>=1.8",  # only used when sunpy < 8 (sunpy >= 8 ships a SOAR client)
     "drms>=0.7",
+    "requests>=2.28",
 ]
 dev = [
     "pytest>=7",

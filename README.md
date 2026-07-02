@@ -120,8 +120,11 @@ Useful flags: `--start/--end` for other date ranges, `--phi-only` /
 window. Downloads are idempotent — existing files are kept.
 
 The script needs direct network access to `soar.esac.esa.int` and
-`jsoc.stanford.edu`. HMI downloads use JSOC's "as-is" quick-export path,
-which does not require a registered JSOC export email.
+`jsoc.stanford.edu`. HMI records that are online at JSOC are fetched
+directly from SUMS over HTTP with no registration; only records that have
+gone offline need a real export request, for which you must pass
+`--jsoc-email` (or set `JSOC_EXPORT_EMAIL`) with an address registered at
+http://jsoc.stanford.edu/ajax/register_email.html.
 
 ---
 

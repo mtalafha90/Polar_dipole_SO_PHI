@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -7,6 +8,8 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from baseline_config import PHI_DIR, HMI_DIR, MAX_TIME_DIFF_SEC
 from solar_pipeline.io_utils import parse_phi_time
+
+JSOC_BASE = "http://jsoc.stanford.edu"
 
 
 def parse_args():
@@ -37,17 +40,32 @@ def parse_args():
     )
     parser.add_argument("--phi-only", action="store_true", help="Only download PHI files")
     parser.add_argument("--hmi-only", action="store_true", help="Only download HMI files (PHI files must already exist)")
+    parser.add_argument(
+        "--jsoc-email",
+        type=str,
+        default=os.environ.get("JSOC_EXPORT_EMAIL"),
+        help="JSOC-registered email (register at http://jsoc.stanford.edu/ajax/register_email.html). "
+        "Only needed as a fallback when a record is offline at JSOC — online records are fetched "
+        "directly from SUMS without any registration. Defaults to $JSOC_EXPORT_EMAIL.",
+    )
     return parser.parse_args()
 
 
 def download_phi(start: str, end: str, phi_dir: Path) -> list[Path]:
     try:
-        import sunpy_soar  # noqa: F401  (registers a.soar attrs with Fido)
         from sunpy.net import Fido, attrs as a
     except ImportError as exc:
         raise SystemExit(
             f"Missing download dependency ({exc}). Install with: pip install -e '.[download]'"
         )
+    if not hasattr(a, "soar"):
+        # sunpy >= 8 ships its own SOAR client; older sunpy needs sunpy-soar
+        try:
+            import sunpy_soar  # noqa: F401  (registers a.soar attrs with Fido)
+        except ImportError:
+            raise SystemExit(
+                "No SOAR client available: upgrade to sunpy>=8 or pip install sunpy-soar"
+            )
 
     phi_dir.mkdir(exist_ok=True, parents=True)
 
@@ -93,7 +111,25 @@ def nearest_t_rec(t_recs: list[str], phi_time: datetime) -> tuple[str, float]:
     return best, best_dt
 
 
-def download_hmi(phi_files: list[Path], hmi_dir: Path, window_min: float, max_time_diff_sec: float) -> list[Path]:
+def _fetch_url(url: str, dest: Path) -> None:
+    import requests
+
+    tmp = dest.with_suffix(dest.suffix + ".part")
+    with requests.get(url, stream=True, timeout=300) as resp:
+        resp.raise_for_status()
+        with open(tmp, "wb") as f:
+            for chunk in resp.iter_content(1 << 20):
+                f.write(chunk)
+    tmp.rename(dest)
+
+
+def download_hmi(
+    phi_files: list[Path],
+    hmi_dir: Path,
+    window_min: float,
+    max_time_diff_sec: float,
+    email: str | None = None,
+) -> list[Path]:
     try:
         import drms
     except ImportError as exc:
@@ -102,7 +138,7 @@ def download_hmi(phi_files: list[Path], hmi_dir: Path, window_min: float, max_ti
         )
 
     hmi_dir.mkdir(exist_ok=True, parents=True)
-    client = drms.Client()
+    client = drms.Client(email=email) if email else drms.Client()
 
     wanted: dict[str, float] = {}
     for phi_path in phi_files:
@@ -123,15 +159,34 @@ def download_hmi(phi_files: list[Path], hmi_dir: Path, window_min: float, max_ti
     print(f"Need {len(wanted)} unique HMI M_720s records")
 
     files = []
-    for t_rec in sorted(wanted):
+    n_total = len(wanted)
+    for i, t_rec in enumerate(sorted(wanted), start=1):
         expected = hmi_dir / f"hmi.M_720s.{parse_t_rec(t_rec).strftime('%Y%m%d_%H%M%S')}_TAI.magnetogram.fits"
         if expected.exists():
-            print(f"  already present: {expected.name}")
+            print(f"  [{i}/{n_total}] already present: {expected.name}")
             files.append(expected)
             continue
         ds = f"hmi.M_720s[{t_rec}]{{magnetogram}}"
-        print(f"  fetching {ds}")
-        export = client.export(ds, method="url_quick", protocol="as-is")
+        print(f"  [{i}/{n_total}] fetching {ds}")
+
+        # No-registration path: rs_list returns the SUMS path for records
+        # that are online at JSOC, downloadable over plain HTTP.
+        _, segs = client.query(ds, key="T_REC", seg="magnetogram")
+        seg_path = str(segs["magnetogram"].iloc[0]) if len(segs) else ""
+        if seg_path.startswith("/"):
+            _fetch_url(JSOC_BASE + seg_path, expected)
+            files.append(expected)
+            continue
+
+        # Offline record: needs a real JSOC export request (registered email).
+        if not email:
+            raise SystemExit(
+                f"JSOC record {t_rec} is not online in SUMS, so it needs an export "
+                "request, which requires a JSOC-registered email. Register at "
+                "http://jsoc.stanford.edu/ajax/register_email.html and re-run with "
+                "--jsoc-email <address> (or set JSOC_EXPORT_EMAIL)."
+            )
+        export = client.export(ds, method="url_quick", protocol="as-is", email=email)
         result = export.download(str(hmi_dir))
         for local in result["download"]:
             local = Path(local)
@@ -150,9 +205,18 @@ def main():
 
     if not args.phi_only:
         phi_files = sorted(args.phi_dir.glob("solo_L2_phi-fdt-blos_*.fits"))
+        # match HMI only for PHI files inside the requested window, so a
+        # data directory holding a longer campaign doesn't trigger extra
+        # downloads
+        d0 = datetime.strptime(args.start, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        d1 = datetime.strptime(args.end, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        phi_files = [f for f in phi_files if d0 <= parse_phi_time(f) < d1]
         if not phi_files:
-            raise SystemExit(f"No PHI blos files in {args.phi_dir.resolve()}; run without --hmi-only first.")
-        download_hmi(phi_files, args.hmi_dir, args.hmi_window_min, args.max_time_diff_sec)
+            raise SystemExit(
+                f"No PHI blos files in {args.phi_dir.resolve()} within [{args.start}, {args.end}); "
+                "run without --hmi-only first or adjust --start/--end."
+            )
+        download_hmi(phi_files, args.hmi_dir, args.hmi_window_min, args.max_time_diff_sec, email=args.jsoc_email)
 
     print("\nDone. You can now run: python scripts/run_baseline_pipeline.py")
 
