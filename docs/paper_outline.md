@@ -29,8 +29,14 @@ Carrington grid, per-case cross-calibration applied, quiet-Sun threshold
   deg; SolO trails Earth by 40-45 deg in Carrington longitude.
 - Per-case cross-calibration (through-origin regression, |B| > 10 G,
   mu >= 0.4): slope declines monotonically 0.751 -> 0.496 over 8 days at
-  stable r ~ 0.75; a distinct late-UT (21-22 h) cluster sits at
-  slope 0.44-0.46, r ~ 0.60 (observing-program signature).
+  stable r ~ 0.75, tracking the SolO-Sun distance nearly linearly
+  (0.75 at 0.42 AU -> 0.50 at 0.52 AU) — consistent with
+  resolution-dependent flux loss as PHI's plate scale coarsens.
+  Time/distance/longitude-separation are collinear within one window;
+  confirming test: degrade HMI to PHI's per-case resolution before the
+  regression (planned). A distinct late-UT (21-22 h) cluster falls
+  BELOW the distance trend at slope 0.44-0.46, r ~ 0.60
+  (observing-program signature; flagged/excluded in final calibration).
   [Figure: calibration_drift.png]
 - Orientation handling: HMI CROTA2 ~ 180 deg honored in the
   native-geometry path; ignoring it mirrors the map between hemispheres
@@ -67,8 +73,17 @@ Carrington grid, per-case cross-calibration applied, quiet-Sun threshold
   coverage UNIQUE to each vantage — dominantly the high-latitude bins —
   which the common support strips out. Vantage diversity is not
   redundancy; it is signal.
-- Reference check: g10 vs hmi.synoptic_mr_polfil_720s[2264]
-  [run compare_reference_dipole.py --car-rot 2264; insert table].
+- Reference check vs hmi.synoptic_mr_polfil_720s[2264]
+  (g10_ref = +0.654 G): PHI-only/project = +0.695 (Delta = +0.041 G, 6%);
+  merged/polar_extend = +0.528 (-0.126); HMI-only best (polar_extend) =
+  +0.432 (-0.222). The PHI-informed product reproduces the
+  community-standard full-CR dipole to 0.04 G from eight days of data;
+  the same-pipeline Earth-view product misses by 5x more, and the
+  accuracy ordering follows polar coverage (22.0% / annulus-diluted /
+  17.6% north-cap fill). Framing: the PHI product carries HMI's
+  calibration scale, so the claim is vantage-added accuracy, not
+  instrument-alone; and the reference's own poles are model-filled —
+  agreement with the standard SFT input, not absolute truth.
 - Uncertainties: fill-mode spread per product; quiet-Sun (|Br| <= 50 G)
   variants; ALPHA sensitivity sweep [insert from alpha_sweep on real
   data].
@@ -90,8 +105,12 @@ Carrington grid, per-case cross-calibration applied, quiet-Sun threshold
   dipole +3.29 G (PHI) vs +1.06 G (HMI-only) vs +3.13 G (merged) — a
   factor ~3 from the added vantage.
 - Cycle experiment (source on, tau = 10 yr, 22 yr, deterministic
-  amplitude): reversal times differ by [insert from sft_reversals.csv on
-  real data] between products.
+  amplitude): first polar reversal at 2.46 yr from the HMI-only initial
+  condition vs 3.72 yr PHI-informed (merged 3.64) — a 1.26 yr shift in
+  predicted reversal timing from the vantage-added polar constraint.
+  The memory decays as the source dominates: second-reversal spread
+  shrinks to 0.32 yr (14.87/15.19/14.89) and final dipoles converge
+  (3.41/3.17/3.40 G).
 - [2025] High-B0 window: repeat both experiments where the polar
   visibility advantage is ~17 deg instead of 2.5 deg.
 
