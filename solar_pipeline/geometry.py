@@ -20,6 +20,16 @@ def build_radius_arrays(shape, crpix1: float, crpix2: float, cdelt1: float, cdel
     return x, y, dx, dy, rr_pix, rr_norm, rsun_pix
 
 
+def rotate_offsets(dx, dy, crota2_deg: float):
+    """Rotate pixel offsets into the solar north-up frame for a map whose
+    image axes are rotated by CROTA2 (e.g. HMI's ~180 deg camera rotation).
+    No-op for crota2 = 0, which is why the baseline PHI path is unchanged."""
+    if abs(crota2_deg) < 1e-6:
+        return dx, dy
+    rho = np.deg2rad(crota2_deg)
+    return dx * np.cos(rho) - dy * np.sin(rho), dx * np.sin(rho) + dy * np.cos(rho)
+
+
 def estimate_mu_lat_lon(dx, dy, rsun_pix: float, b0_deg: float, l0_deg: float):
     x = dx / rsun_pix
     y = dy / rsun_pix

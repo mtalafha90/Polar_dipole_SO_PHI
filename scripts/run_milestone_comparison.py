@@ -80,6 +80,14 @@ def parse_args():
         help="|B| threshold (Gauss) for pixels entering the calibration regression",
     )
     parser.add_argument(
+        "--calib-min-r",
+        type=float,
+        default=0.5,
+        help="Minimum Pearson r for a per-case calibration slope to be applied; "
+        "an uncorrelated fit (e.g. from misaligned data) would otherwise scale "
+        "PHI by a meaningless factor",
+    )
+    parser.add_argument(
         "--quiet-sun-max-g",
         type=float,
         default=None,
@@ -168,8 +176,32 @@ def main():
             )
 
             phi_scale = 1.0
-            if args.calibrate_phi and np.isfinite(calib["slope"]) and calib["slope"] != 0.0:
-                phi_scale = 1.0 / calib["slope"]
+            if args.calibrate_phi:
+                if (
+                    np.isfinite(calib["slope"])
+                    and calib["slope"] > 0
+                    and abs(calib["pearson_r"]) >= args.calib_min_r
+                ):
+                    phi_scale = 1.0 / calib["slope"]
+                else:
+                    print(
+                        f"  WARNING: calibration unreliable (slope={calib['slope']:.3f}, "
+                        f"r={calib['pearson_r']:.3f}); not applied to this case"
+                    )
+
+            # compute everything BEFORE accumulating, so a failure partway
+            # through a case cannot leave the products inconsistently filled
+            native = None
+            if fields["hmi_path"] not in seen_hmi:
+                # HMI-only, Earth vantage: the matched HMI magnetogram in its
+                # OWN disk geometry (deduplicated if two PHI files matched
+                # the same HMI record)
+                native = compute_native_disk_fields(
+                    fields["hmi"],
+                    disk_fraction=args.disk_fraction,
+                    mu_min=args.mu_min,
+                    alpha=args.alpha,
+                )
 
             w_phi = cm_weight(fields["cmd"], power=args.cm_weight_power)
 
@@ -184,18 +216,8 @@ def main():
                 br_merged, fields["lat"], fields["lon"],
                 fields["valid_merged"], w_phi, fields["mu"],
             )
-
-            # HMI-only, Earth vantage: bin the matched HMI magnetogram from
-            # its OWN disk geometry (deduplicated if two PHI files matched
-            # the same HMI record)
-            if fields["hmi_path"] not in seen_hmi:
+            if native is not None:
                 seen_hmi.add(fields["hmi_path"])
-                native = compute_native_disk_fields(
-                    fields["hmi"],
-                    disk_fraction=args.disk_fraction,
-                    mu_min=args.mu_min,
-                    alpha=args.alpha,
-                )
                 acc["hmi"].add(
                     native["br"], native["lat"], native["lon"],
                     native["valid"], cm_weight(native["cmd"], power=args.cm_weight_power),

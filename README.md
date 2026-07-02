@@ -121,10 +121,19 @@ window. Downloads are idempotent — existing files are kept.
 
 The script needs direct network access to `soar.esac.esa.int` and
 `jsoc.stanford.edu`. HMI records that are online at JSOC are fetched
-directly from SUMS over HTTP with no registration; only records that have
-gone offline need a real export request, for which you must pass
-`--jsoc-email` (or set `JSOC_EXPORT_EMAIL`) with an address registered at
-http://jsoc.stanford.edu/ajax/register_email.html.
+directly from SUMS over HTTP with no registration; the DRMS keywords (WCS,
+observer geometry, CROTA2) are queried alongside and written into each
+file's header, since raw SUMS segments carry no metadata of their own.
+Only records that have gone offline need a real export request, for which
+you must pass `--jsoc-email` (or set `JSOC_EXPORT_EMAIL`) with an address
+registered at http://jsoc.stanford.edu/ajax/register_email.html.
+
+HMI files downloaded before this header injection existed can be repaired
+in place (no re-download) with:
+
+```bash
+python scripts/download_baseline_data.py --fix-headers
+```
 
 ---
 

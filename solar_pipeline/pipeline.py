@@ -12,7 +12,7 @@ from .io_utils import (
     load_map,
     find_nearest_hmi,
 )
-from .geometry import build_radius_arrays, estimate_mu_lat_lon
+from .geometry import build_radius_arrays, estimate_mu_lat_lon, rotate_offsets
 from .blending import smooth_merge
 from .calibration import calibration_stats
 from .radial import los_to_br
@@ -38,6 +38,12 @@ def compute_native_disk_fields(
     silently give the HMI data PHI's viewing geometry (including any polar
     visibility advantage), making vantage-point comparisons circular.
     """
+    if "crpix1" not in smap.meta:
+        raise RuntimeError(
+            "Map has no WCS keywords (crpix1 missing). If this is an HMI file "
+            "fetched from JSOC SUMS, repair it with: "
+            "python scripts/download_baseline_data.py --fix-headers"
+        )
     crpix1 = float(smap.meta["crpix1"])
     crpix2 = float(smap.meta["crpix2"])
     cdelt1 = float(smap.meta["cdelt1"])
@@ -45,6 +51,7 @@ def compute_native_disk_fields(
     rsun_arcsec = float(smap.meta.get("rsun_obs", smap.meta.get("rsun_arc")))
     b0_deg = float(smap.meta.get("crlt_obs", 0.0))
     l0_deg = float(smap.meta.get("crln_obs", 0.0))
+    crota2_deg = float(smap.meta.get("crota2", 0.0))
 
     _, _, dx, dy, _, rr_norm, rsun_pix = build_radius_arrays(
         shape=smap.data.shape,
@@ -54,6 +61,7 @@ def compute_native_disk_fields(
         cdelt2=cdelt2,
         rsun_arcsec=rsun_arcsec,
     )
+    dx, dy = rotate_offsets(dx, dy, crota2_deg)
 
     mu, lat, lon, cmd = estimate_mu_lat_lon(
         dx=dx, dy=dy, rsun_pix=rsun_pix, b0_deg=b0_deg, l0_deg=l0_deg
@@ -116,6 +124,7 @@ def compute_case_fields(
     rsun_arcsec = float(phi_blos.meta.get("rsun_obs", phi_blos.meta.get("rsun_arc")))
     b0_deg = float(phi_blos.meta.get("crlt_obs", 0.0))
     l0_deg = float(phi_blos.meta.get("crln_obs", 0.0))
+    crota2_deg = float(phi_blos.meta.get("crota2", 0.0))
 
     _, _, dx, dy, _, rr_norm, rsun_pix = build_radius_arrays(
         shape=phi_blos.data.shape,
@@ -125,6 +134,7 @@ def compute_case_fields(
         cdelt2=cdelt2,
         rsun_arcsec=rsun_arcsec,
     )
+    dx, dy = rotate_offsets(dx, dy, crota2_deg)
 
     merged, disk_mask = smooth_merge(
         phi_blos.data,

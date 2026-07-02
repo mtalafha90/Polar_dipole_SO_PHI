@@ -7,9 +7,40 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from baseline_config import PHI_DIR, HMI_DIR, MAX_TIME_DIFF_SEC
-from solar_pipeline.io_utils import parse_phi_time
+from solar_pipeline.io_utils import parse_phi_time, parse_hmi_time
 
 JSOC_BASE = "http://jsoc.stanford.edu"
+
+# DRMS keywords injected into downloaded SUMS segment files. Raw SUMS
+# segments carry almost no header (JSOC keeps metadata in the DRMS
+# database; only the email-gated "fits" export protocol writes it into the
+# file), so without this the maps have no usable WCS at all.
+HMI_HEADER_KEYS = [
+    "T_REC", "T_OBS", "DATE__OBS", "TELESCOP", "INSTRUME", "WAVELNTH", "BUNIT",
+    "CTYPE1", "CTYPE2", "CUNIT1", "CUNIT2", "CRPIX1", "CRPIX2", "CRVAL1", "CRVAL2",
+    "CDELT1", "CDELT2", "CROTA2",
+    "RSUN_OBS", "RSUN_REF", "DSUN_OBS", "DSUN_REF", "CRLN_OBS", "CRLT_OBS",
+    "CAR_ROT", "OBS_VR", "OBS_VW", "OBS_VN", "QUALITY", "CAMERA",
+]
+
+
+def _patch_fits_header(path: Path, keyvals: dict) -> None:
+    from astropy.io import fits
+
+    with fits.open(path, mode="update") as hdul:
+        for hdu in hdul:
+            data = getattr(hdu, "data", None)
+            if data is not None and getattr(data, "ndim", 0) == 2:
+                for key, val in keyvals.items():
+                    if val is None or (isinstance(val, float) and val != val):
+                        continue
+                    if isinstance(val, str) and val.strip() in ("", "MISSING", "Invalid KeyLink"):
+                        continue
+                    card = "DATE-OBS" if key == "DATE__OBS" else key
+                    hdu.header[card] = val
+                hdul.flush()
+                return
+    raise ValueError(f"No 2D image HDU found in {path}")
 
 
 def parse_args():
@@ -40,6 +71,13 @@ def parse_args():
     )
     parser.add_argument("--phi-only", action="store_true", help="Only download PHI files")
     parser.add_argument("--hmi-only", action="store_true", help="Only download HMI files (PHI files must already exist)")
+    parser.add_argument(
+        "--fix-headers",
+        action="store_true",
+        help="Repair already-downloaded HMI files that lack WCS keywords "
+        "(raw SUMS segments): query JSOC for each file's DRMS keywords and "
+        "write them into the FITS header in place. No re-download needed.",
+    )
     parser.add_argument(
         "--jsoc-email",
         type=str,
@@ -170,11 +208,14 @@ def download_hmi(
         print(f"  [{i}/{n_total}] fetching {ds}")
 
         # No-registration path: rs_list returns the SUMS path for records
-        # that are online at JSOC, downloadable over plain HTTP.
-        _, segs = client.query(ds, key="T_REC", seg="magnetogram")
+        # that are online at JSOC, downloadable over plain HTTP. The same
+        # query also returns the DRMS keywords, which must be injected into
+        # the file: raw SUMS segments have no WCS header of their own.
+        keys, segs = client.query(ds, key=HMI_HEADER_KEYS, seg="magnetogram")
         seg_path = str(segs["magnetogram"].iloc[0]) if len(segs) else ""
         if seg_path.startswith("/"):
             _fetch_url(JSOC_BASE + seg_path, expected)
+            _patch_fits_header(expected, keys.iloc[0].to_dict())
             files.append(expected)
             continue
 
@@ -197,8 +238,50 @@ def download_hmi(
     return files
 
 
+def fix_hmi_headers(hmi_dir: Path) -> None:
+    try:
+        import drms
+        from astropy.io import fits
+    except ImportError as exc:
+        raise SystemExit(
+            f"Missing download dependency ({exc}). Install with: pip install -e '.[download]'"
+        )
+
+    client = drms.Client()
+    files = sorted(hmi_dir.glob("hmi.M_720s.*.magnetogram.fits"))
+    if not files:
+        raise SystemExit(f"No HMI files in {hmi_dir.resolve()}")
+
+    n_fixed = n_ok = n_fail = 0
+    for i, f in enumerate(files, start=1):
+        with fits.open(f) as hdul:
+            has_wcs = any(
+                "crpix1" in hdu.header
+                for hdu in hdul
+                if getattr(hdu, "data", None) is not None and getattr(hdu.data, "ndim", 0) == 2
+            )
+        if has_wcs:
+            n_ok += 1
+            continue
+        t_rec = tai_str(parse_hmi_time(f))
+        keys = client.query(f"hmi.M_720s[{t_rec}]", key=HMI_HEADER_KEYS)
+        if len(keys) == 0:
+            print(f"  [{i}/{len(files)}] WARNING: no JSOC record for {f.name}")
+            n_fail += 1
+            continue
+        _patch_fits_header(f, keys.iloc[0].to_dict())
+        n_fixed += 1
+        print(f"  [{i}/{len(files)}] patched {f.name}")
+
+    print(f"\nDone: {n_fixed} patched, {n_ok} already had WCS, {n_fail} failed.")
+
+
 def main():
     args = parse_args()
+
+    if args.fix_headers:
+        fix_hmi_headers(args.hmi_dir)
+        return
 
     if not args.hmi_only:
         download_phi(args.start, args.end, args.phi_dir)
