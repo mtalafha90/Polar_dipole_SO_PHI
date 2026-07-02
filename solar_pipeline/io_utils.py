@@ -1,11 +1,44 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import sunpy.map
 from astropy.io import fits
+
+
+def expand_date_spec(spec: str) -> set[str] | None:
+    """Expand a --dates specification into a set of YYYYMMDD strings.
+
+    Accepts comma-separated tokens, each either a single date (20221027) or
+    an inclusive range (20221017-20221113). Returns None for "all"/"*",
+    meaning no date filtering.
+    """
+    spec = spec.strip()
+    if spec.lower() in ("all", "*"):
+        return None
+    out: set[str] = set()
+    for token in spec.split(","):
+        token = token.strip()
+        if not token:
+            continue
+        if "-" in token:
+            a, b = token.split("-", 1)
+            d0 = datetime.strptime(a.strip(), "%Y%m%d")
+            d1 = datetime.strptime(b.strip(), "%Y%m%d")
+            if d1 < d0:
+                raise ValueError(f"Date range end before start: {token}")
+            cur = d0
+            while cur <= d1:
+                out.add(cur.strftime("%Y%m%d"))
+                cur += timedelta(days=1)
+        else:
+            datetime.strptime(token, "%Y%m%d")
+            out.add(token)
+    if not out:
+        raise ValueError(f"Empty date specification: {spec!r}")
+    return out
 
 
 def parse_phi_time(path: Path) -> datetime:

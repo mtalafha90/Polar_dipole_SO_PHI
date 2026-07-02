@@ -33,7 +33,7 @@ from baseline_config import (
     NLAT,
     NLON,
 )
-from solar_pipeline.io_utils import build_hmi_time_index, save_synoptic_fits
+from solar_pipeline.io_utils import build_hmi_time_index, expand_date_spec, save_synoptic_fits
 from solar_pipeline.pipeline import compute_case_fields, compute_native_disk_fields
 from solar_pipeline.calibration import calibration_stats
 from solar_pipeline.carrington import (
@@ -41,7 +41,6 @@ from solar_pipeline.carrington import (
     bin_br_to_carrington_weighted,
     bin_max_to_carrington,
     combine_weighted_grids,
-    combine_max_grids,
     carrington_fill_fraction,
 )
 from solar_pipeline.dipole import FILL_MODES, axial_dipole_g10, polar_fill_fractions
@@ -80,34 +79,48 @@ def parse_args():
         default=10.0,
         help="|B| threshold (Gauss) for pixels entering the calibration regression",
     )
+    parser.add_argument(
+        "--quiet-sun-max-g",
+        type=float,
+        default=None,
+        help="If set, also report *_quiet rows: dipoles from bins with "
+        "|Br| below this threshold, excluding active regions (where the "
+        "radial-field assumption fails and the two vantages disagree most)",
+    )
     return parser.parse_args()
 
 
 class Accumulator:
-    """Accumulates weighted synoptic bins and max-mu confidence per product."""
+    """Accumulates weighted synoptic bins and max-mu confidence per product.
+
+    Uses running totals rather than per-case grids so memory stays flat for
+    full-Carrington-rotation runs with ~100+ cases.
+    """
 
     def __init__(self, nlat: int, nlon: int):
         self.nlat, self.nlon = nlat, nlon
-        self.wsums, self.weights, self.quals = [], [], []
+        self.wsum_total = np.zeros((nlat, nlon))
+        self.weight_total = np.zeros((nlat, nlon))
+        self.quality = np.full((nlat, nlon), np.nan)
         self.lat_centers = self.lon_centers = None
 
     def add(self, br, lat, lon, valid, weight, mu):
         wsum, wt, self.lat_centers, self.lon_centers = bin_br_to_carrington_weighted(
             br, lat, lon, valid, weight, nlat=self.nlat, nlon=self.nlon
         )
-        self.wsums.append(wsum)
-        self.weights.append(wt)
-        self.quals.append(bin_max_to_carrington(mu, lat, lon, valid, nlat=self.nlat, nlon=self.nlon))
+        self.wsum_total += wsum
+        self.weight_total += wt
+        q = bin_max_to_carrington(mu, lat, lon, valid, nlat=self.nlat, nlon=self.nlon)
+        self.quality = np.fmax(self.quality, q)
 
     def combine(self):
-        grid, total_weight = combine_weighted_grids(self.wsums, self.weights)
-        quality = combine_max_grids(self.quals)
-        return grid, total_weight, quality
+        grid, total_weight = combine_weighted_grids([self.wsum_total], [self.weight_total])
+        return grid, total_weight, self.quality
 
 
 def main():
     args = parse_args()
-    only_dates = {d.strip() for d in args.dates.split(",") if d.strip()}
+    only_dates = expand_date_spec(args.dates)
 
     out_dir = args.out_dir / "milestone"
     out_dir.mkdir(exist_ok=True, parents=True)
@@ -115,7 +128,7 @@ def main():
     plots_dir.mkdir(exist_ok=True, parents=True)
 
     phi_blos_files = sorted(args.phi_dir.glob("solo_L2_phi-fdt-blos_*.fits"))
-    phi_blos_files = [f for f in phi_blos_files if any(d in f.name for d in only_dates)]
+    phi_blos_files = [f for f in phi_blos_files if only_dates is None or any(d in f.name for d in only_dates)]
     hmi_files = sorted(args.hmi_dir.glob("hmi.M_720s.*.magnetogram.fits"))
 
     if not phi_blos_files:
@@ -245,6 +258,20 @@ def main():
             common_row[f"g10_north_{mode}"] = dip["g10_north"]
             common_row[f"g10_south_{mode}"] = dip["g10_south"]
         rows.append(common_row)
+
+        if args.quiet_sun_max_g is not None:
+            for label, base in ((f"{name}_quiet", grid), (f"{name}_quiet_common", common_grid)):
+                quiet_grid = np.where(np.abs(base) <= args.quiet_sun_max_g, base, np.nan)
+                quiet_row = {
+                    "product": label,
+                    "fill_fraction": float(np.count_nonzero(np.isfinite(quiet_grid)) / quiet_grid.size),
+                }
+                for mode in FILL_MODES:
+                    dip = axial_dipole_g10(quiet_grid, lat_c, mode=mode)
+                    quiet_row[f"g10_{mode}"] = dip["g10"]
+                    quiet_row[f"g10_north_{mode}"] = dip["g10_north"]
+                    quiet_row[f"g10_south_{mode}"] = dip["g10_south"]
+                rows.append(quiet_row)
 
     df = pd.DataFrame(rows)
     df.to_csv(out_dir / "milestone_dipole_comparison.csv", index=False)

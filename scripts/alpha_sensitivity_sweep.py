@@ -23,7 +23,7 @@ from baseline_config import (
     NLAT,
     NLON,
 )
-from solar_pipeline.io_utils import build_hmi_time_index
+from solar_pipeline.io_utils import build_hmi_time_index, expand_date_spec
 from solar_pipeline.pipeline import run_case
 
 
@@ -57,14 +57,14 @@ def parse_args():
 
 def main():
     args = parse_args()
-    only_dates = {d.strip() for d in args.dates.split(",") if d.strip()}
+    only_dates = expand_date_spec(args.dates)
     alphas = [float(a.strip()) for a in args.alphas.split(",") if a.strip()]
 
     out_dir = args.out_dir / "alpha_sweep"
     out_dir.mkdir(exist_ok=True, parents=True)
 
     phi_blos_files = sorted(args.phi_dir.glob("solo_L2_phi-fdt-blos_*.fits"))
-    phi_blos_files = [f for f in phi_blos_files if any(d in f.name for d in only_dates)]
+    phi_blos_files = [f for f in phi_blos_files if only_dates is None or any(d in f.name for d in only_dates)]
     hmi_files = sorted(args.hmi_dir.glob("hmi.M_720s.*.magnetogram.fits"))
 
     if not phi_blos_files:

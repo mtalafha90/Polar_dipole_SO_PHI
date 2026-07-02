@@ -156,6 +156,10 @@ python scripts/run_baseline_pipeline.py \
 
 Run `python scripts/run_baseline_pipeline.py --help` for the full list of flags.
 
+`--dates` (all scripts) accepts single days (`20221027`), comma lists,
+inclusive ranges (`20221017-20221113`), or `all` to process every file
+present — use ranges for full-Carrington-rotation runs.
+
 To regenerate plots only:
 
 ```bash
@@ -274,6 +278,14 @@ profile), `polar_extend` (caps filled with the last observed band's zonal
 mean) — with north/south decomposition, polar-cap fill fractions, and a
 per-bin max-mu confidence grid. Per-case PHI-vs-HMI calibration slopes are
 reported (`--calibrate-phi` applies them).
+
+The comparison table also contains `*_common` rows (each product's dipole
+recomputed on the intersection of all products' observed bins, isolating
+vantage/calibration effects from longitude-coverage effects) and, with
+`--quiet-sun-max-g <G>`, `*_quiet` / `*_quiet_common` rows that exclude
+strong-field bins — active regions are where the radial-field assumption
+fails and the two vantages disagree most, so the quiet-Sun dipole is the
+cleanest cross-vantage comparison.
 
 Outputs go to `baseline_outputs/milestone/`: `.npy` grids, SFT-ready
 `synoptic_*.fits` maps (plate-carrée WCS), `milestone_dipole_comparison.csv`,
