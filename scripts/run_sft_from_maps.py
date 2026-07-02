@@ -26,6 +26,7 @@ from solar_pipeline.sft import (
     SFTModel,
     HathawayJiangSource,
     axial_dipole_moment,
+    balance_flux,
     polar_cap_mean,
     reversal_times,
     zonal_profile_from_map,
@@ -60,6 +61,13 @@ def parse_args():
     parser.add_argument("--source-sigma", type=float, default=0.0, help="Cycle-amplitude scatter (0 = deterministic)")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--unobserved", choices=["zero", "extend"], default="zero")
+    parser.add_argument(
+        "--balance-flux",
+        action="store_true",
+        help="Remove net signed flux from each injected profile (recommended for "
+        "partial-coverage maps, whose unbalanced flux otherwise drives "
+        "unphysically large polar asymmetries)",
+    )
     parser.add_argument("--cap-deg", type=float, default=70.0)
     return parser.parse_args()
 
@@ -91,6 +99,8 @@ def main():
             continue
         grid = np.load(grid_path)
         b_init = zonal_profile_from_map(grid, lat_centers, model.latitude, unobserved=args.unobserved)
+        if args.balance_flux:
+            b_init = balance_flux(b_init, model.theta)
         profiles[product] = b_init
 
         times, history = model.run(b_init, years=args.years, source_fn=source_fn)

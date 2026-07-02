@@ -230,6 +230,16 @@ def reversal_times(times, dipoles):
     return [float(t[i] - d[i] * (t[i + 1] - t[i]) / (d[i + 1] - d[i])) for i in idx]
 
 
+def balance_flux(b, theta):
+    """Remove the net signed flux from a B(latitude) profile by subtracting
+    the area-weighted mean. A partial-coverage map generally injects
+    hemispherically unbalanced flux, which the SFT then transports into
+    unphysically large polar asymmetries; balancing is standard practice
+    before injection."""
+    mean = np.trapezoid(b * np.sin(theta), theta) / np.trapezoid(np.sin(theta), theta)
+    return b - mean
+
+
 # --------------------- map -> initial condition injection ---------------------
 
 def zonal_profile_from_map(grid, lat_centers, sft_latitude, unobserved: str = "zero"):

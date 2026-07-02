@@ -196,9 +196,16 @@ def main():
     if n_ok == 0:
         raise RuntimeError("No cases processed successfully.")
 
+    combined = {name: acc[name].combine() for name in ("phi", "hmi", "merged")}
+    # bins observed by every product: comparing dipoles on this common
+    # support isolates vantage/calibration effects from coverage effects
+    # (the PHI and HMI vantage points can be tens of degrees apart in
+    # longitude, which otherwise dominates the product differences)
+    common_mask = np.logical_and.reduce([combined[n][1] > 0 for n in combined])
+
     rows = []
     for name in ("phi", "hmi", "merged"):
-        grid, weight, quality = acc[name].combine()
+        grid, weight, quality = combined[name]
         lat_c, lon_c = acc[name].lat_centers, acc[name].lon_centers
 
         np.save(out_dir / f"grid_{name}.npy", grid)
@@ -226,6 +233,18 @@ def main():
             row[f"g10_north_{mode}"] = dip["g10_north"]
             row[f"g10_south_{mode}"] = dip["g10_south"]
         rows.append(row)
+
+        common_grid = np.where(common_mask, grid, np.nan)
+        common_row = {
+            "product": f"{name}_common",
+            "fill_fraction": float(np.count_nonzero(common_mask) / common_mask.size),
+        }
+        for mode in FILL_MODES:
+            dip = axial_dipole_g10(common_grid, lat_c, mode=mode)
+            common_row[f"g10_{mode}"] = dip["g10"]
+            common_row[f"g10_north_{mode}"] = dip["g10_north"]
+            common_row[f"g10_south_{mode}"] = dip["g10_south"]
+        rows.append(common_row)
 
     df = pd.DataFrame(rows)
     df.to_csv(out_dir / "milestone_dipole_comparison.csv", index=False)
