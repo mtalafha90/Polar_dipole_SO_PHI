@@ -55,9 +55,30 @@ def test_patch_writes_wcs_and_skips_junk(tmp_path):
     assert "CAMERA" not in header
 
 
+def test_patch_compressed_segment(tmp_path):
+    # real SUMS segments are Rice-compressed integer images; the crashed
+    # in-place update is avoided by rewrite-and-replace, which must keep the
+    # data bit-identical (do_not_scale + lossless int recompression)
+    f = tmp_path / "hmi.M_720s.20221030_041200_TAI.magnetogram.fits"
+    data = (np.arange(1024, dtype=np.int32) - 512).reshape(32, 32)
+    fits.HDUList([fits.PrimaryHDU(), fits.CompImageHDU(data)]).writeto(f)
+
+    _patch_fits_header(f, {"CRPIX1": 16.5, "CROTA2": 180.07, "CRLT_OBS": 4.83})
+
+    with fits.open(f, do_not_scale_image_data=True) as hdul:
+        image = next(
+            h for h in hdul
+            if getattr(h, "data", None) is not None and getattr(h.data, "ndim", 0) == 2
+        )
+        assert image.header["CRPIX1"] == 16.5
+        assert image.header["CROTA2"] == 180.07
+        assert np.array_equal(image.data, data)
+
+
 if __name__ == "__main__":
     import tempfile
 
     with tempfile.TemporaryDirectory() as d:
         test_patch_writes_wcs_and_skips_junk(Path(d))
+        test_patch_compressed_segment(Path(d))
     print("All tests passed.")

@@ -51,6 +51,23 @@ def test_rotated_instrument_recovers_same_fields():
     assert f_up["valid"].sum() == f_rot["valid"].sum()
 
 
+def test_pc_matrix_encodes_rotation():
+    # some PHI L2 programs encode orientation via PCi_j instead of CROTA2:
+    # a 180-deg PC matrix must behave exactly like crota2=180
+    upright = make_synthetic_disk(b0_deg=10.0, l0_deg=180.0)
+    rotated_meta = dict(upright.meta)
+    rotated_meta.update({"pc1_1": -1.0, "pc1_2": 0.0, "pc2_1": 0.0, "pc2_2": -1.0})
+    rotated = FakeMap(upright.data[::-1, ::-1].copy(), rotated_meta)
+
+    f_up = compute_native_disk_fields(upright, disk_fraction=0.98, mu_min=MU_MIN, alpha=1.0)
+    f_rot = compute_native_disk_fields(rotated, disk_fraction=0.98, mu_min=MU_MIN, alpha=1.0)
+
+    a, b = f_up["br"], f_rot["br"][::-1, ::-1]
+    both = np.isfinite(a) & np.isfinite(b)
+    assert both.sum() > 1000
+    assert np.allclose(a[both], b[both], atol=1e-8)
+
+
 def test_missing_wcs_gives_helpful_error():
     bare = FakeMap(np.ones((16, 16)), {"date-obs": "2022-10-30T04:15:03"})
     try:

@@ -300,11 +300,27 @@ def main():
     calib_df = pd.DataFrame(calib_rows)
     calib_df.to_csv(out_dir / "calibration_stats.csv", index=False)
 
+    # map-space correlation between products on the common support: a
+    # decisive orientation/consistency check. Strongly positive is expected;
+    # near-zero or negative means one product's map is misplaced (wrong WCS,
+    # unhandled rotation, ...).
+    corr_rows = []
+    grids = {name: combined[name][0] for name in combined}
+    for a, b in (("phi", "hmi"), ("phi", "merged"), ("hmi", "merged")):
+        sel = common_mask & np.isfinite(grids[a]) & np.isfinite(grids[b])
+        r = float(np.corrcoef(grids[a][sel], grids[b][sel])[0, 1]) if sel.sum() >= 10 else float("nan")
+        corr_rows.append({"pair": f"{a}-{b}", "pearson_r": r, "n_bins": int(sel.sum())})
+    corr_df = pd.DataFrame(corr_rows)
+    corr_df.to_csv(out_dir / "map_correlations.csv", index=False)
+
     np.save(out_dir / "lat_centers.npy", acc["phi"].lat_centers)
     np.save(out_dir / "lon_centers.npy", acc["phi"].lon_centers)
 
     print("\n=== Milestone dipole comparison ===")
     print(df.to_string(index=False))
+    print("\n=== Map-space correlations on common support ===")
+    print("(orientation/consistency check: strongly positive expected)")
+    print(corr_df.to_string(index=False))
     print("\n=== PHI-vs-HMI calibration ===")
     print(calib_df.to_string(index=False))
     print(f"\nOutputs in: {out_dir.resolve()}")

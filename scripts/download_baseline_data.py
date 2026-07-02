@@ -25,22 +25,36 @@ HMI_HEADER_KEYS = [
 
 
 def _patch_fits_header(path: Path, keyvals: dict) -> None:
+    """Write DRMS keywords into a SUMS segment file.
+
+    Read -> patch -> write to a temp file -> atomic replace. In-place
+    (mode="update") editing fails on these files: their bare headers are
+    structurally malformed (missing XTENSION/PCOUNT cards) and astropy's
+    in-place flush of a repaired compressed HDU crashes with
+    "seek of closed file". do_not_scale_image_data keeps integer data raw
+    so the recompression is lossless.
+    """
     from astropy.io import fits
 
-    with fits.open(path, mode="update") as hdul:
+    tmp = path.with_name(path.name + ".patching")
+    with fits.open(path, do_not_scale_image_data=True) as hdul:
+        target = None
         for hdu in hdul:
             data = getattr(hdu, "data", None)
             if data is not None and getattr(data, "ndim", 0) == 2:
-                for key, val in keyvals.items():
-                    if val is None or (isinstance(val, float) and val != val):
-                        continue
-                    if isinstance(val, str) and val.strip() in ("", "MISSING", "Invalid KeyLink"):
-                        continue
-                    card = "DATE-OBS" if key == "DATE__OBS" else key
-                    hdu.header[card] = val
-                hdul.flush()
-                return
-    raise ValueError(f"No 2D image HDU found in {path}")
+                target = hdu
+                break
+        if target is None:
+            raise ValueError(f"No 2D image HDU found in {path}")
+        for key, val in keyvals.items():
+            if val is None or (isinstance(val, float) and val != val):
+                continue
+            if isinstance(val, str) and val.strip() in ("", "MISSING", "Invalid KeyLink"):
+                continue
+            card = "DATE-OBS" if key == "DATE__OBS" else key
+            target.header[card] = val
+        hdul.writeto(tmp, overwrite=True, output_verify="silentfix")
+    tmp.replace(path)
 
 
 def parse_args():

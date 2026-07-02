@@ -23,6 +23,22 @@ from .carrington import (
 )
 
 
+def _effective_crota2(meta) -> float:
+    """Image rotation in degrees for the direct-geometry path.
+
+    Prefers CROTA2; falls back to deriving the angle from the PC matrix
+    (some PHI L2 observing programs encode orientation as PCi_j instead of
+    CROTA2). Returns 0 when neither is present.
+    """
+    if "crota2" in meta:
+        return float(meta["crota2"])
+    if "pc1_1" in meta:
+        pc11 = float(meta["pc1_1"])
+        pc21 = float(meta.get("pc2_1", 0.0))
+        return float(np.degrees(np.arctan2(pc21, pc11)))
+    return 0.0
+
+
 def compute_native_disk_fields(
     smap,
     *,
@@ -51,7 +67,7 @@ def compute_native_disk_fields(
     rsun_arcsec = float(smap.meta.get("rsun_obs", smap.meta.get("rsun_arc")))
     b0_deg = float(smap.meta.get("crlt_obs", 0.0))
     l0_deg = float(smap.meta.get("crln_obs", 0.0))
-    crota2_deg = float(smap.meta.get("crota2", 0.0))
+    crota2_deg = _effective_crota2(smap.meta)
 
     _, _, dx, dy, _, rr_norm, rsun_pix = build_radius_arrays(
         shape=smap.data.shape,
@@ -124,7 +140,7 @@ def compute_case_fields(
     rsun_arcsec = float(phi_blos.meta.get("rsun_obs", phi_blos.meta.get("rsun_arc")))
     b0_deg = float(phi_blos.meta.get("crlt_obs", 0.0))
     l0_deg = float(phi_blos.meta.get("crln_obs", 0.0))
-    crota2_deg = float(phi_blos.meta.get("crota2", 0.0))
+    crota2_deg = _effective_crota2(phi_blos.meta)
 
     _, _, dx, dy, _, rr_norm, rsun_pix = build_radius_arrays(
         shape=phi_blos.data.shape,
