@@ -89,6 +89,18 @@ def axial_dipole_g10(br_grid, lat_centers, mode: str = "zero") -> dict[str, floa
     return {"g10": g10_n + g10_s, "g10_north": g10_n, "g10_south": g10_s}
 
 
+def axial_dipole_g10_sinlat(br_grid) -> float:
+    """g10 for a full-sphere map on a uniform sine-latitude (CEA) grid,
+    e.g. HMI synoptic charts (hmi.Synoptic_Mr*). With s = sin(lat) uniform,
+    dOmega = ds dlon, so g10 = 3 * mean(Br * s). NaN bins contribute zero.
+    """
+    nlat = br_grid.shape[0]
+    s_edges = np.linspace(-1.0, 1.0, nlat + 1)
+    s = 0.5 * (s_edges[:-1] + s_edges[1:])
+    filled = np.where(np.isfinite(br_grid), br_grid, 0.0)
+    return float(3.0 * np.mean(filled * s[:, None]))
+
+
 def polar_fill_fractions(grid_count, lat_centers, polar_lat_deg: float = 60.0) -> dict[str, float]:
     """Fraction of polar-cap bins (|lat| > polar_lat_deg) that are observed,
     per hemisphere. `grid_count` is a per-bin count or weight grid."""

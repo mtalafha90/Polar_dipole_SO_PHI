@@ -92,6 +92,7 @@ def main():
 
     results = {}
     profiles = {}
+    reversal_rows = []
     for product in PRODUCTS:
         grid_path = args.maps_dir / f"grid_{product}.npy"
         if not grid_path.exists():
@@ -113,6 +114,14 @@ def main():
             f"{product}: g10(0)={dip[0]:+.4f}  g10({args.years:.0f}yr)={dip[-1]:+.4f}  "
             f"capN(0)={capN[0]:+.3f}  reversals={['%.2f' % r for r in revs]}"
         )
+        reversal_rows.append({
+            "product": product,
+            "g10_initial": float(dip[0]),
+            "g10_final": float(dip[-1]),
+            "n_reversals": len(revs),
+            "first_reversal_yr": revs[0] if revs else float("nan"),
+            "reversal_times_yr": ";".join(f"{r:.3f}" for r in revs),
+        })
 
     if not results:
         raise RuntimeError(f"No map products found in {args.maps_dir}")
@@ -128,6 +137,7 @@ def main():
         rows.append(row)
     df = pd.DataFrame(rows)
     df.to_csv(args.out_dir / "sft_comparison.csv", index=False)
+    pd.DataFrame(reversal_rows).to_csv(args.out_dir / "sft_reversals.csv", index=False)
 
     np.save(args.out_dir / "sft_latitude.npy", model.latitude)
     for product, b in profiles.items():

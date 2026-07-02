@@ -71,6 +71,34 @@ Earth-like B0=0° vs SolO-like B0=30° observers) confirms:
 - **Merged maps carry a confidence grid** (per-bin max mu and accumulated
   CM weight) so SFT experiments can weight or mask low-confidence polar bins.
 
+## Next campaign: high-latitude window (2025+)
+
+The CR 2264 subset had SolO only ~2.5 deg above Earth's B0, so the
+polar-visibility advantage was small; the measured gains came mostly from
+longitude coverage and the +7 deg vantage. Since early 2025 Solar
+Orbiter's orbital inclination reaches ~17 deg, and the high-latitude
+windows are where the project's core question gets its real test: at
+B0 = 17 deg the pole itself is visible at mu = sin(17) ~ 0.29 and the
+>60 deg cap fill should roughly double relative to CR 2264.
+
+The tooling is date-generic; a high-latitude campaign is only a data
+selection. Check SOAR for phi-fdt-blos availability inside a high-B0
+window (the PHI team publishes observing plans), then:
+
+```bash
+python scripts/download_baseline_data.py --start <YYYY-MM-DD> --end <YYYY-MM-DD>
+python scripts/run_baseline_pipeline.py    --dates <YYYYMMDD-YYYYMMDD>
+python scripts/run_milestone_comparison.py --dates <YYYYMMDD-YYYYMMDD> --calibrate-phi --quiet-sun-max-g 50
+python scripts/plot_calibration_drift.py
+python scripts/compare_reference_dipole.py --car-rot <CR>
+python scripts/run_sft_from_maps.py --balance-flux
+python scripts/run_sft_from_maps.py --balance-flux --source on --tau 10 --years 22
+```
+
+Numbers to compare directly against CR 2264: polar_fill_north/south,
+the full-vs-common g10 split, capN at injection, and the SFT asymptotic
+dipole and reversal times per product.
+
 ## Paper structure (target)
 
 1. Introduction

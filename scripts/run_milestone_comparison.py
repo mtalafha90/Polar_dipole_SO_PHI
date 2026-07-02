@@ -169,7 +169,15 @@ def main():
                 fields["phi_blos"].data, fields["hmi_on_phi"].data, fields["mu"],
                 mu_min=args.mu_min, min_abs_ref=args.calib_min_abs_g,
             )
-            calib_rows.append({"phi_blos_file": phi_blos_path.name, **calib})
+            phi_crln = float(fields["phi_blos"].meta.get("crln_obs", np.nan))
+            hmi_crln = float(fields["hmi"].meta.get("crln_obs", np.nan))
+            calib_rows.append({
+                "phi_blos_file": phi_blos_path.name,
+                "phi_time": fields["phi_time"].isoformat(),
+                "phi_dsun_au": float(fields["phi_blos"].meta.get("dsun_obs", np.nan)) / 1.495978707e11,
+                "lon_separation_deg": abs(((phi_crln - hmi_crln) + 180.0) % 360.0 - 180.0),
+                **calib,
+            })
             print(
                 f"  calib: PHI ~= {calib['slope']:.3f} x HMI "
                 f"(r={calib['pearson_r']:.3f}, n={calib['n_pixels']})"
