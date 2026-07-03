@@ -214,14 +214,21 @@ PHI covers each rotation:
 Constraining the north cap, where HMI is effectively blind, injects a
 strong polar field where the Earth view has essentially none, flips the
 initial dipole sign (g₁₀(0) = −0.26 vs +0.10 G), and pulls the first
-predicted polar reversal 1.68 yr earlier. Constraining the co-observed
-south cap changes nothing, because HMI already constrains that pole. In
-both cases the 22-yr dipoles converge (~+3.1 G) as the deterministic
-source dominates: the memory of the polar constraint lives in the reversal
-*timing*, not the asymptote. The polar view moves the SFT prediction only
-where the Earth view lacks the information — its impact is therefore
-maximal at the high-separation northern epoch, precisely the
-standalone-constraint regime.
+predicted polar reversal 1.68 yr earlier. Note it is the *constrained*
+product, not PHI-only, that reverses early: PHI's north cap is strongly
+negative, so splicing it into an otherwise-HMI initial condition starts the
+dipole already below zero, on the verge of reversal, whereas the PHI-only
+and HMI-only profiles both start slightly positive and reverse ~1 yr apart.
+Constraining the co-observed south cap changes nothing, because HMI already
+constrains that pole. In both cases the 22-yr dipoles converge (~+3.1 G) as
+the deterministic source dominates: the memory of the polar constraint
+lives in the reversal *timing*, not the asymptote. The polar view moves the
+SFT prediction only where the Earth view lacks the information — its impact
+is therefore maximal at the high-separation northern epoch, precisely the
+standalone-constraint regime. [Figure: `sft_polar_figure.png`, from
+`run_sft_polar_experiment.py` / `plot_sft_polar.py`: HMI-only flat at zero
+through the constrained cap while HMI+PHI carries PHI's polar field, and the
+resulting g₁₀(t) with the −1.68 yr reversal shift.]
 
 ### 4.5 Reference validation and its limit
 
