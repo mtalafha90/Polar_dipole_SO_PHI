@@ -353,6 +353,26 @@ injected profiles, and a comparison figure. The port is physics-validated in
 `tests/test_sft.py`, including the analytic l=1 diffusive decay rate
 `2·eta/Rsun²` recovered to <2%.
 
+**Polar-constraint experiment (`run_sft_polar_experiment.py`).** At the
+epochs where PHI has a real polar advantage the SolO–Earth separation is
+large (opposite hemispheres), so a per-pixel merge is invalid — PHI is a
+*standalone polar constraint*, not a merge partner. This script builds the
+initial condition from HMI everywhere **except** the polar cap PHI observes,
+where PHI's zonal field is spliced in (`apply_polar_constraint`, with a
+`--blend-deg` ramp), and evolves three cases — `hmi` (the polar handicap),
+`phi_constrained` (HMI + PHI cap), and `phi` (PHI-only) — reporting the
+Δg₁₀ and Δreversal-timing the PHI constraint induces. Run it per rotation on
+the pole PHI covers (`--hemisphere south` for the March rotation,
+`--hemisphere north` for April):
+
+```bash
+python scripts/run_sft_polar_experiment.py --maps-dir out/cr_2296/milestone \
+       --hemisphere north --source on --tau 10 --years 22 --balance-flux
+```
+
+Outputs (`<maps-dir>/sft_polar/`): `sft_polar_comparison.csv`,
+`sft_polar_reversals.csv`, injected profiles, and a figure.
+
 ---
 
 ## 7. Results on the CR 2264 subset (Oct 27 – Nov 3, 2022)

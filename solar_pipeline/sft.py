@@ -250,8 +250,8 @@ def zonal_profile_from_map(grid, lat_centers, sft_latitude, unobserved: str = "z
       handicap an Earth-view-only product carries into the SFT)
     - "extend": hold the value of the nearest observed latitude
     """
-    if unobserved not in ("zero", "extend"):
-        raise ValueError("unobserved must be 'zero' or 'extend'")
+    if unobserved not in ("zero", "extend", "nan"):
+        raise ValueError("unobserved must be 'zero', 'extend' or 'nan'")
 
     finite = np.isfinite(grid)
     counts = finite.sum(axis=1)
@@ -262,6 +262,13 @@ def zonal_profile_from_map(grid, lat_centers, sft_latitude, unobserved: str = "z
         raise RuntimeError("Map has no observed bins.")
 
     lat_deg = np.rad2deg(lat_centers)
+    if unobserved == "nan":
+        # value from the observed bands, but NaN wherever no band was
+        # observed -- so a downstream polar constraint touches only the
+        # latitudes this product actually measured
+        val = np.interp(sft_latitude, lat_deg[observed], zonal[observed])
+        cover = np.interp(sft_latitude, lat_deg, observed.astype(float))
+        return np.where(cover >= 0.5, val, np.nan)
     if unobserved == "extend":
         zonal = np.interp(lat_deg, lat_deg[observed], zonal[observed])
     else:
@@ -269,3 +276,34 @@ def zonal_profile_from_map(grid, lat_centers, sft_latitude, unobserved: str = "z
 
     # SFT latitude runs +90 -> -90; np.interp needs ascending x
     return np.interp(sft_latitude, lat_deg, zonal)
+
+
+def apply_polar_constraint(b_base, b_polar, latitude, polar_lat_deg: float = 60.0,
+                           hemisphere: str = "both", blend_deg: float = 10.0):
+    """Splice a polar-view product's polar-cap field into a base profile.
+
+    The base (Earth-view/HMI) zonal profile is kept everywhere equatorward
+    of ``polar_lat_deg``; poleward of it the polar-view (SolO/PHI) profile
+    is blended in over ``blend_deg`` of latitude. This isolates the effect
+    of a Solar Orbiter polar constraint on the SFT initial condition
+    *without* a per-pixel merge -- which is invalid at the large SolO-Earth
+    separations where PHI actually has the polar advantage (see README 6c).
+
+    ``hemisphere`` selects which cap(s) to constrain ('north', 'south',
+    'both'). Where ``b_polar`` is non-finite (a latitude PHI did not
+    observe), the base profile is left untouched.
+    """
+    if hemisphere not in ("north", "south", "both"):
+        raise ValueError("hemisphere must be 'north', 'south' or 'both'")
+    b_base = np.asarray(b_base, dtype=float)
+    b_polar = np.asarray(b_polar, dtype=float)
+    lat = np.asarray(latitude, dtype=float)
+
+    inner = polar_lat_deg - blend_deg
+    w = np.clip((np.abs(lat) - inner) / max(blend_deg, 1e-9), 0.0, 1.0)
+    if hemisphere == "north":
+        w = np.where(lat > 0, w, 0.0)
+    elif hemisphere == "south":
+        w = np.where(lat < 0, w, 0.0)
+    w = np.where(np.isfinite(b_polar), w, 0.0)  # only where PHI has a value
+    return (1.0 - w) * b_base + w * np.nan_to_num(b_polar)

@@ -20,11 +20,50 @@ from solar_pipeline.sft import (
     KM2S_TO_MM2_PER_DAY,
     SFTModel,
     HathawayJiangSource,
+    apply_polar_constraint,
     axial_dipole_moment,
     polar_cap_mean,
     reversal_times,
     zonal_profile_from_map,
 )
+
+
+def _dipole_grid(nlat=90, nlon=180, observed_max_deg=None):
+    lat_edges = np.linspace(-np.pi / 2, np.pi / 2, nlat + 1)
+    lat_centers = 0.5 * (lat_edges[:-1] + lat_edges[1:])
+    grid = 5.0 * np.sin(lat_centers)[:, None] * np.ones((nlat, nlon))
+    if observed_max_deg is not None:
+        grid[np.abs(np.rad2deg(lat_centers)) > observed_max_deg, :] = np.nan
+    return grid, lat_centers
+
+
+def test_zonal_nan_mode_masks_unobserved():
+    # observed only equatorward of 55 deg
+    grid, lat_centers = _dipole_grid(observed_max_deg=55.0)
+    model = SFTModel(flowtype=2, u0=0.0, eta=250.0)
+    b_nan = zonal_profile_from_map(grid, lat_centers, model.latitude, unobserved="nan")
+    assert np.all(np.isnan(b_nan[np.abs(model.latitude) > 60]))       # caps masked
+    assert np.all(np.isfinite(b_nan[np.abs(model.latitude) < 45]))    # mid observed
+
+
+def test_apply_polar_constraint_splices_only_selected_cap():
+    model = SFTModel(flowtype=2, u0=0.0, eta=250.0)
+    lat = model.latitude
+    b_base = np.zeros_like(lat)                       # HMI: nothing in the caps
+    b_polar = np.where(np.abs(lat) >= 55, 4.0, np.nan)  # PHI: +4 G in both caps
+    out = apply_polar_constraint(b_base, b_polar, lat, polar_lat_deg=60.0,
+                                 hemisphere="north", blend_deg=10.0)
+    assert np.allclose(out[lat > 65], 4.0)            # north cap took PHI
+    assert np.allclose(out[lat < -65], 0.0)           # south cap untouched
+    assert np.allclose(out[np.abs(lat) < 40], 0.0)    # mid-latitudes untouched
+
+
+def test_apply_polar_constraint_keeps_base_where_polar_missing():
+    lat = np.linspace(90, -90, 181)
+    b_base = np.full_like(lat, 1.0)
+    b_polar = np.full_like(lat, np.nan)               # PHI observed nothing
+    out = apply_polar_constraint(b_base, b_polar, lat, hemisphere="both")
+    assert np.allclose(out, b_base)                   # base is preserved everywhere
 
 
 def test_dipole_diffusive_decay_rate():

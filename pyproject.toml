@@ -36,6 +36,7 @@ run-milestone-comparison = "scripts.run_milestone_comparison:main"
 run-milestone-by-rotation = "scripts.run_milestone_by_rotation:main"
 plot-campaign-summary = "scripts.plot_campaign_summary:main"
 run-sft-from-maps = "scripts.run_sft_from_maps:main"
+run-sft-polar-experiment = "scripts.run_sft_polar_experiment:main"
 
 [tool.setuptools]
 py-modules = ["baseline_config"]
