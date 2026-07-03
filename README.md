@@ -287,9 +287,30 @@ The table also reports:
 - a **map-space correlation** table (`map_correlations.csv`) between
   products on the common support — a decisive orientation/consistency check.
 
+`--max-separation-deg <D>` guards the **merged** product: cases whose
+SolO–Earth Carrington-longitude separation exceeds `D` are excluded from the
+blend (and left uncalibrated), because per-pixel PHI+HMI blending is
+meaningless once the two spacecraft look at different hemispheres — as in the
+2025 high-B0 campaign, where the separation reached ~171°. The PHI and HMI
+native-geometry products keep every case, so polar-coverage statistics are
+unaffected. `calibration_stats.csv` records each case's `lon_separation_deg`
+and both `crlt_obs` (B0) values.
+
 Outputs (`baseline_outputs/milestone/`): `.npy` grids, SFT-ready
 `synoptic_*.fits` maps (plate-carrée WCS), `milestone_dipole_comparison.csv`,
 `calibration_stats.csv`, `map_correlations.csv`, and map plots.
+
+**Per-rotation runs.** A multi-month window spans several Carrington
+rotations; a single combined map smears the dipole across them and cannot be
+checked against a per-rotation reference chart. `run_milestone_by_rotation.py`
+splits the window by rotation (assigning each day by its noon) and runs the
+milestone comparison once per CR into `<out-dir>/cr_<N>/`, forwarding any
+flags after a literal `--`:
+
+```bash
+python scripts/run_milestone_by_rotation.py --dates 20250211-20250429 \
+       -- --calibrate-phi --quiet-sun-max-g 50 --max-separation-deg 60
+```
 
 ### 6d. Calibration drift and reference checks
 

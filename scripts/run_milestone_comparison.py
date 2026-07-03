@@ -47,6 +47,16 @@ from solar_pipeline.dipole import FILL_MODES, axial_dipole_g10, polar_fill_fract
 from solar_pipeline.plotting import plot_carrington_map
 
 
+def safe_dipole(grid, lat_centers, mode):
+    """axial_dipole_g10 that returns NaNs instead of raising for an empty
+    grid. A product can be legitimately empty (e.g. the merged product when
+    every case is excluded by --max-separation-deg), and that should yield a
+    NaN row rather than aborting the whole run."""
+    if not np.any(np.isfinite(grid)):
+        return {"g10": float("nan"), "g10_north": float("nan"), "g10_south": float("nan")}
+    return axial_dipole_g10(grid, lat_centers, mode=mode)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phi-dir", type=Path, default=PHI_DIR)
@@ -95,6 +105,17 @@ def parse_args():
         "|Br| below this threshold, excluding active regions (where the "
         "radial-field assumption fails and the two vantages disagree most)",
     )
+    parser.add_argument(
+        "--max-separation-deg",
+        type=float,
+        default=None,
+        help="If set, cases whose SolO-Earth Carrington-longitude separation "
+        "exceeds this are excluded from the MERGED product (per-pixel PHI+HMI "
+        "blending is meaningless when the two spacecraft see different "
+        "hemispheres). Their PHI and HMI contributions still enter the "
+        "respective native-geometry products. Calibration is also not applied "
+        "beyond this separation.",
+    )
     return parser.parse_args()
 
 
@@ -110,7 +131,13 @@ class Accumulator:
         self.wsum_total = np.zeros((nlat, nlon))
         self.weight_total = np.zeros((nlat, nlon))
         self.quality = np.full((nlat, nlon), np.nan)
-        self.lat_centers = self.lon_centers = None
+        # grid geometry is fixed by nlat/nlon, so it is well-defined even
+        # for a product to which no case was ever added (e.g. an empty
+        # merged product when --max-separation-deg excludes every case)
+        lat_edges = np.linspace(-np.pi / 2, np.pi / 2, nlat + 1)
+        lon_edges = np.linspace(0.0, 2.0 * np.pi, nlon + 1)
+        self.lat_centers = 0.5 * (lat_edges[:-1] + lat_edges[1:])
+        self.lon_centers = 0.5 * (lon_edges[:-1] + lon_edges[1:])
 
     def add(self, br, lat, lon, valid, weight, mu):
         wsum, wt, self.lat_centers, self.lon_centers = bin_br_to_carrington_weighted(
@@ -150,6 +177,7 @@ def main():
     calib_rows = []
     seen_hmi = set()
     n_ok = 0
+    n_merged_excluded = 0
 
     for i, phi_blos_path in enumerate(phi_blos_files, start=1):
         print(f"[{i}/{len(phi_blos_files)}] {phi_blos_path.name}")
@@ -171,22 +199,31 @@ def main():
             )
             phi_crln = float(fields["phi_blos"].meta.get("crln_obs", np.nan))
             hmi_crln = float(fields["hmi"].meta.get("crln_obs", np.nan))
+            separation = abs(((phi_crln - hmi_crln) + 180.0) % 360.0 - 180.0)
             calib_rows.append({
                 "phi_blos_file": phi_blos_path.name,
                 "phi_time": fields["phi_time"].isoformat(),
+                "phi_crlt_obs": float(fields["phi_blos"].meta.get("crlt_obs", np.nan)),
+                "hmi_crlt_obs": float(fields["hmi"].meta.get("crlt_obs", np.nan)),
                 "phi_dsun_au": float(fields["phi_blos"].meta.get("dsun_obs", np.nan)) / 1.495978707e11,
-                "lon_separation_deg": abs(((phi_crln - hmi_crln) + 180.0) % 360.0 - 180.0),
+                "lon_separation_deg": separation,
                 **calib,
             })
             print(
                 f"  calib: PHI ~= {calib['slope']:.3f} x HMI "
-                f"(r={calib['pearson_r']:.3f}, n={calib['n_pixels']})"
+                f"(r={calib['pearson_r']:.3f}, n={calib['n_pixels']}), sep={separation:.1f} deg"
             )
+
+            # per-pixel blending and calibration are only meaningful while the
+            # two spacecraft co-observe; beyond --max-separation-deg they see
+            # different hemispheres
+            co_observing = args.max_separation_deg is None or separation <= args.max_separation_deg
 
             phi_scale = 1.0
             if args.calibrate_phi:
                 if (
-                    np.isfinite(calib["slope"])
+                    co_observing
+                    and np.isfinite(calib["slope"])
                     and calib["slope"] > 0
                     and abs(calib["pearson_r"]) >= args.calib_min_r
                 ):
@@ -194,7 +231,7 @@ def main():
                 else:
                     print(
                         f"  WARNING: calibration unreliable (slope={calib['slope']:.3f}, "
-                        f"r={calib['pearson_r']:.3f}); not applied to this case"
+                        f"r={calib['pearson_r']:.3f}, sep={separation:.1f}); not applied to this case"
                     )
 
             # compute everything BEFORE accumulating, so a failure partway
@@ -218,12 +255,17 @@ def main():
                 fields["br_phi"] * phi_scale, fields["lat"], fields["lon"],
                 fields["valid_phi"], w_phi, fields["mu"],
             )
-            # merged product lives on the PHI grid
-            br_merged = fields["br_merged"] * phi_scale if args.calibrate_phi else fields["br_merged"]
-            acc["merged"].add(
-                br_merged, fields["lat"], fields["lon"],
-                fields["valid_merged"], w_phi, fields["mu"],
-            )
+            # merged product lives on the PHI grid; only include a case when
+            # the two spacecraft actually co-observe a common disk region
+            if co_observing:
+                br_merged = fields["br_merged"] * phi_scale if args.calibrate_phi else fields["br_merged"]
+                acc["merged"].add(
+                    br_merged, fields["lat"], fields["lon"],
+                    fields["valid_merged"], w_phi, fields["mu"],
+                )
+            else:
+                n_merged_excluded += 1
+                print(f"  (sep={separation:.1f} > {args.max_separation_deg}: excluded from merged product)")
             if native is not None:
                 seen_hmi.add(fields["hmi_path"])
                 acc["hmi"].add(
@@ -238,6 +280,12 @@ def main():
 
     if n_ok == 0:
         raise RuntimeError("No cases processed successfully.")
+
+    if args.max_separation_deg is not None:
+        print(
+            f"\n{n_merged_excluded}/{n_ok} cases excluded from the merged product "
+            f"(separation > {args.max_separation_deg} deg); PHI and HMI products keep all cases."
+        )
 
     combined = {name: acc[name].combine() for name in ("phi", "hmi", "merged")}
     # bins observed by every product: comparing dipoles on this common
@@ -271,7 +319,7 @@ def main():
             f"polar_fill_south_{args.polar_lat_deg:.0f}": polar["south"],
         }
         for mode in FILL_MODES:
-            dip = axial_dipole_g10(grid, lat_c, mode=mode)
+            dip = safe_dipole(grid, lat_c, mode)
             row[f"g10_{mode}"] = dip["g10"]
             row[f"g10_north_{mode}"] = dip["g10_north"]
             row[f"g10_south_{mode}"] = dip["g10_south"]
@@ -283,7 +331,7 @@ def main():
             "fill_fraction": float(np.count_nonzero(common_mask) / common_mask.size),
         }
         for mode in FILL_MODES:
-            dip = axial_dipole_g10(common_grid, lat_c, mode=mode)
+            dip = safe_dipole(common_grid, lat_c, mode)
             common_row[f"g10_{mode}"] = dip["g10"]
             common_row[f"g10_north_{mode}"] = dip["g10_north"]
             common_row[f"g10_south_{mode}"] = dip["g10_south"]
@@ -297,7 +345,7 @@ def main():
                     "fill_fraction": float(np.count_nonzero(np.isfinite(quiet_grid)) / quiet_grid.size),
                 }
                 for mode in FILL_MODES:
-                    dip = axial_dipole_g10(quiet_grid, lat_c, mode=mode)
+                    dip = safe_dipole(quiet_grid, lat_c, mode)
                     quiet_row[f"g10_{mode}"] = dip["g10"]
                     quiet_row[f"g10_north_{mode}"] = dip["g10_north"]
                     quiet_row[f"g10_south_{mode}"] = dip["g10_south"]
