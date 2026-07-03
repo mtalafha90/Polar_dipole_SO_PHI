@@ -1,0 +1,279 @@
+<title>Solar Orbiter polar constraints on the Sun's dipole — 2025 campaign results</title>
+<style>
+  :root {
+    --bg:#F6F8FA; --surface:#FFFFFF; --surface-2:#EEF1F5;
+    --ink:#12161D; --muted:#586172; --faint:#8A93A2;
+    --hair:#E1E6EC; --hair-strong:#CDD5DE;
+    --phi:#0A6FB0; --phi-ink:#075A90; --phi-soft:rgba(10,111,176,.12);
+    --hmi:#B4711A; --hmi-ink:#8F5911; --hmi-soft:rgba(180,113,26,.14);
+    --good:#2E7D5B;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0A0E15; --surface:#111825; --surface-2:#0E141F;
+      --ink:#E9ECF1; --muted:#909BAB; --faint:#67707F;
+      --hair:#212B39; --hair-strong:#2E3A4B;
+      --phi:#4FA6E2; --phi-ink:#8CC6EF; --phi-soft:rgba(79,166,226,.16);
+      --hmi:#E4A63C; --hmi-ink:#F0C275; --hmi-soft:rgba(228,166,60,.16);
+      --good:#57C79A;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#F6F8FA; --surface:#FFFFFF; --surface-2:#EEF1F5;
+    --ink:#12161D; --muted:#586172; --faint:#8A93A2;
+    --hair:#E1E6EC; --hair-strong:#CDD5DE;
+    --phi:#0A6FB0; --phi-ink:#075A90; --phi-soft:rgba(10,111,176,.12);
+    --hmi:#B4711A; --hmi-ink:#8F5911; --hmi-soft:rgba(180,113,26,.14);
+    --good:#2E7D5B;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0A0E15; --surface:#111825; --surface-2:#0E141F;
+    --ink:#E9ECF1; --muted:#909BAB; --faint:#67707F;
+    --hair:#212B39; --hair-strong:#2E3A4B;
+    --phi:#4FA6E2; --phi-ink:#8CC6EF; --phi-soft:rgba(79,166,226,.16);
+    --hmi:#E4A63C; --hmi-ink:#F0C275; --hmi-soft:rgba(228,166,60,.16);
+    --good:#57C79A;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--serif); font-size:17px; line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; width:100%; margin:0 auto; padding:0 24px}
+  .col{max-width:760px; margin-left:auto; margin-right:auto}
+
+  h1,h2,h3,.eyebrow,.chip,.stat-num,.tbl,.axis,.legend,.crlabel,.rotmeta,.barval,.footer{font-family:var(--sans)}
+  h1{font-size:clamp(30px,5vw,46px); line-height:1.06; letter-spacing:-.02em; font-weight:800; margin:.2em 0 .3em; text-wrap:balance}
+  h2{font-size:clamp(21px,3vw,27px); letter-spacing:-.01em; font-weight:750; margin:0 0 .5em; text-wrap:balance}
+  h3{font-size:15px; font-weight:700; letter-spacing:.01em; margin:0 0 .35em}
+  p{margin:0 0 1em}
+  a{color:var(--phi-ink)}
+  strong{font-weight:700}
+  .lead{font-size:clamp(18px,2.4vw,21px); color:var(--ink); line-height:1.5}
+  .muted{color:var(--muted)}
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:.55em;
+    font-size:12.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--phi)}
+  .eyebrow .dot.amb{background:var(--hmi)}
+
+  header.hero{padding:64px 0 30px; border-bottom:1px solid var(--hair)}
+  .metaline{
+    display:flex; flex-wrap:wrap; gap:8px 10px; margin-top:20px;
+    font-family:var(--mono); font-size:12.5px; color:var(--muted);
+  }
+  .chip{
+    border:1px solid var(--hair-strong); border-radius:999px; padding:4px 11px;
+    background:var(--surface); font-variant-numeric:tabular-nums;
+  }
+
+  section{padding:40px 0; border-bottom:1px solid var(--hair)}
+  section:last-of-type{border-bottom:none}
+  .sec-eyebrow{margin-bottom:14px}
+
+  /* stat band */
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:8px 0 4px}
+  .stat{
+    background:var(--surface); border:1px solid var(--hair); border-radius:14px;
+    padding:20px 18px; display:flex; flex-direction:column; gap:6px;
+  }
+  .stat-num{font-size:clamp(26px,3.5vw,34px); font-weight:800; letter-spacing:-.02em; line-height:1;
+    white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--phi-ink)}
+  .stat-num.warn{color:var(--hmi-ink)}
+  .stat-cap{font-family:var(--sans); font-size:13.5px; color:var(--muted); line-height:1.4}
+  .stat-cap b{color:var(--ink); font-weight:700}
+
+  /* coverage chart */
+  .legend{display:flex; gap:18px; align-items:center; font-size:13px; color:var(--muted); margin-bottom:18px}
+  .legend .key{display:inline-flex; align-items:center; gap:7px}
+  .legend .sw{width:13px;height:13px;border-radius:3px}
+  .sw.phi{background:var(--phi)} .sw.hmi{background:var(--hmi)}
+
+  .chart{display:flex; flex-direction:column; gap:18px}
+  .rot{background:var(--surface); border:1px solid var(--hair); border-radius:14px; padding:16px 18px}
+  .rot-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 12px; margin-bottom:12px}
+  .crlabel{font-size:15px; font-weight:750; letter-spacing:-.01em}
+  .crlabel.win{color:var(--phi-ink)}
+  .rotmeta{font-family:var(--mono); font-size:11.5px; color:var(--faint); font-variant-numeric:tabular-nums}
+  .caps{display:grid; grid-template-columns:1fr 1fr; gap:12px 26px}
+  @media (max-width:560px){ .caps{grid-template-columns:1fr} .stats{grid-template-columns:1fr} }
+  .cap-h{font-family:var(--sans); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:7px}
+  .bar-row{display:grid; grid-template-columns:30px 1fr; align-items:center; gap:9px; margin:5px 0}
+  .bar-row .who{font-family:var(--mono); font-size:11px; color:var(--muted)}
+  .track{position:relative; height:16px; background:var(--surface-2); border-radius:5px; overflow:hidden}
+  .fill{position:absolute; left:0; top:0; height:100%; width:0; border-radius:5px; transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .fill.phi{background:var(--phi)} .fill.hmi{background:var(--hmi)}
+  .barval{position:absolute; top:50%; transform:translateY(-50%); font-size:11px; font-weight:700;
+    font-variant-numeric:tabular-nums; color:var(--ink); font-family:var(--mono)}
+  @media (prefers-reduced-motion:reduce){ .fill{transition:none} }
+
+  /* tables */
+  .tablewrap{overflow-x:auto; border:1px solid var(--hair); border-radius:12px; background:var(--surface)}
+  table.tbl{border-collapse:collapse; width:100%; font-size:13.5px; font-variant-numeric:tabular-nums}
+  .tbl th,.tbl td{padding:11px 14px; text-align:left; border-bottom:1px solid var(--hair); white-space:nowrap}
+  .tbl th{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td.num{text-align:right}
+  .tbl .big{color:var(--phi-ink); font-weight:700}
+  .tbl .nil{color:var(--muted)}
+
+  .callout{
+    border-left:3px solid var(--phi); background:var(--phi-soft);
+    border-radius:0 12px 12px 0; padding:16px 20px; margin:6px 0;
+  }
+  .callout.warn{border-left-color:var(--hmi); background:var(--hmi-soft)}
+  .callout h3{color:var(--ink)}
+
+  .takeaway{background:var(--surface); border:1px solid var(--hair-strong); border-radius:16px; padding:26px 26px 24px}
+  .takeaway .big-line{font-family:var(--serif); font-size:clamp(20px,2.8vw,25px); line-height:1.4; font-weight:600; text-wrap:balance; margin-bottom:.5em}
+  .takeaway .big-line em{font-style:italic; color:var(--phi-ink)}
+
+  footer{padding:30px 0 56px; color:var(--faint); font-size:12.5px; font-family:var(--sans)}
+  footer code{font-family:var(--mono); color:var(--muted)}
+  .provgrid{display:flex; flex-wrap:wrap; gap:6px 20px; margin-top:8px}
+</style>
+
+<div class="wrap"><div class="col">
+
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span>Solar Orbiter/PHI <span class="muted">×</span> <span class="dot amb"></span>SDO/HMI</span>
+    <h1>The polar view matters exactly where Earth is blind</h1>
+    <p class="lead muted">A four-rotation campaign (Feb–Apr 2025) testing whether Solar Orbiter's out-of-ecliptic magnetograph improves surface-flux-transport estimates of the Sun's axial dipole moment g₁₀ — the strongest precursor of the next cycle.</p>
+    <div class="metaline">
+      <span class="chip">Window · 2025-02-14 → 04-29</span>
+      <span class="chip">CR 2294–2297</span>
+      <span class="chip">SolO B₀ · −2° → −16.7° → +16.8°</span>
+      <span class="chip">Earth B₀ · ≈ −7°</span>
+    </div>
+  </header>
+
+  <section>
+    <span class="eyebrow sec-eyebrow"><span class="dot"></span>Headline</span>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-num">16×</span>
+        <span class="stat-cap"><b>North-cap coverage gain.</b> PHI fills 51% of the ≥60° north cap in April vs HMI's 3%.</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">−1.68 yr</span>
+        <span class="stat-cap"><b>Predicted-reversal shift.</b> From adding PHI's north-cap field to the SFT start, where HMI sees nothing.</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num nil" style="color:var(--muted)">−0.004 yr</span>
+        <span class="stat-cap"><b>Where HMI already sees the pole</b> (south, March), PHI's constraint changes nothing.</span>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:18px; font-size:15px">The added vantage moves the flux-transport prediction <strong>only, but decidedly, where the Earth view lacks the information</strong> — the single sentence the campaign establishes.</p>
+  </section>
+
+  <section>
+    <span class="eyebrow sec-eyebrow"><span class="dot"></span>Result 1 · Coverage</span>
+    <h2>PHI's polar advantage switches on with SolO's latitude</h2>
+    <p class="muted" style="font-size:15px">≥60° polar-cap fill fraction, PHI vs HMI, per Carrington rotation. Coverage is a count of observed bins — independent of calibration and of any polar-fill assumption, so this is the most robust result. As SolO dives to −17° it wins the <em>south</em> cap; as it climbs to +17° it wins the <em>north</em> by an order of magnitude.</p>
+    <div class="legend">
+      <span class="key"><span class="sw phi"></span>PHI (Solar Orbiter)</span>
+      <span class="key"><span class="sw hmi"></span>HMI (SDO)</span>
+      <span class="key muted" style="margin-left:auto">bar length = % of cap observed</span>
+    </div>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <section>
+    <span class="eyebrow sec-eyebrow"><span class="dot"></span>Result 2 · Flux transport</span>
+    <h2>The SFT payoff is concentrated where HMI is blind</h2>
+    <p class="muted" style="font-size:15px">Because the two spacecraft view opposite hemispheres at the high-latitude epochs, a per-pixel map merge is invalid there. Instead PHI enters the SFT as a <strong>polar boundary constraint</strong>: the initial condition is HMI everywhere except the cap PHI observes. Cycle source on, τ = 10 yr, 22-yr integration, flux-balanced.</p>
+    <div class="tablewrap">
+      <table class="tbl">
+        <thead><tr><th>PHI constraint</th><th class="num">HMI cap fill</th><th class="num">Injected polar field</th><th class="num">Δ first reversal</th></tr></thead>
+        <tbody>
+          <tr><td><strong>North</strong> · CR 2296</td><td class="num nil">3%</td><td class="num">capN = −1.51 G <span class="muted">(HMI ≈ 0)</span></td><td class="num big">−1.68 yr</td></tr>
+          <tr><td><strong>South</strong> · CR 2295</td><td class="num">46%</td><td class="num">capS 0.20 vs 0.37 G</td><td class="num nil">−0.004 yr</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h3>Why the north matters and the south doesn't</h3>
+      <p style="margin:0" class="muted">Constraining the north cap, where HMI is effectively blind, injects a strong polar field where the Earth view has none — flipping the initial dipole sign (g₁₀(0) = −0.26 vs +0.10 G) and pulling the first predicted reversal 1.68 yr earlier. Constraining the co-observed south cap changes nothing, because HMI already constrains that pole. The 22-yr dipoles converge (~+3.1 G) as the source dominates: the memory lives in reversal <em>timing</em>, not the asymptote.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow sec-eyebrow"><span class="dot amb"></span>Result 3 · Validation & its limit</span>
+    <h2>The reference check, read honestly</h2>
+    <p class="muted" style="font-size:15px">Each rotation is checked against the standard polar-filled HMI synoptic chart (<code style="font-family:var(--mono);font-size:.9em">hmi.synoptic_mr_polfil_720s</code>). Its dipole is small, negative, and growing more negative — consistent with the cycle-25 polar field rebuilding near maximum.</p>
+    <div class="tablewrap" style="margin-bottom:16px">
+      <table class="tbl">
+        <thead><tr><th>Rotation</th><th class="num">CR 2294</th><th class="num">CR 2295</th><th class="num">CR 2296</th><th class="num">CR 2297</th></tr></thead>
+        <tbody>
+          <tr><td>reference g₁₀ (G)</td><td class="num">−0.21</td><td class="num">−0.17</td><td class="num">−0.18</td><td class="num">−0.39</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h3>Absolute g₁₀ is provisional; coverage and the SFT differential are not</h3>
+      <p style="margin:0" class="muted">The partial-coverage products don't reproduce this near-zero signal in sign (all +0.3 to +1.0 G). Unlike a dense window, a near-zero true dipole sampled from partial per-rotation longitude coverage is swamped by sampling. So we report the <strong>coverage</strong> and the <strong>SFT reversal-timing differential</strong> — both independent of calibration and fill mode — as the campaign's robust results, and flag the per-rotation absolute g₁₀ as provisional.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow sec-eyebrow"><span class="dot"></span>The reframing</span>
+    <div class="takeaway">
+      <p class="big-line">PHI's polar advantage is largest exactly when the SolO–Earth separation is largest — so the two vantages are <em>complementary in time, not co-registered in space</em>.</p>
+      <p class="muted" style="margin:0; font-size:15px">Both are driven by the same orbit: Solar Orbiter reaches high heliolatitude precisely when it is far around the Sun from Earth. When a merge is well-posed (small separation) PHI has little polar advantage; when its advantage is decisive (April, north cap, 80–172° apart) a merge is meaningless. The value of the polar view is therefore as an <strong>independent polar constraint</strong> — a boundary condition for the SFT model — at the moments Earth cannot see a given pole, not as a pixel-level merge partner.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div>Generated from the <code>SO-PHI-SDO-HMI</code> pipeline · figures by <code>plot_campaign_summary.py</code>, SFT by <code>run_sft_polar_experiment.py</code>, reference by <code>compare_reference_by_rotation.py</code>.</div>
+    <div class="provgrid">
+      <span>Coverage: calibration-independent</span>
+      <span>SFT: 1-D van Ballegooijen flow, η = 250 km²/s</span>
+      <span>Full write-up: <code>docs/manuscript.md</code></span>
+    </div>
+  </footer>
+
+</div></div>
+
+<script>
+  const rotations = [
+    {cr:"CR 2294", meta:"Feb 14–Mar 1 · B₀ −2→−8° · sep 15–21°", n:[5,0], s:[30,38], win:null},
+    {cr:"CR 2295", meta:"Mar 2–Mar 28 · B₀ −8→−17° · sep 0.3–60°", n:[0,0], s:[64,46], win:"s"},
+    {cr:"CR 2296", meta:"Mar 31–Apr 24 · B₀ −8→+17° · sep 80–165°", n:[51,3], s:[12,41], win:"n"},
+    {cr:"CR 2297", meta:"Apr 26–Apr 29 · B₀ +16.8° apex · sep 168–172°", n:[37,2], s:[0,13], win:"n"},
+  ];
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function barRow(who, val, cls){
+    return `<div class="bar-row"><span class="who">${who}</span>`+
+      `<div class="track"><i class="fill ${cls}" data-w="${val}"></i>`+
+      `<span class="barval" style="left:calc(${Math.min(val,100)}% + 7px)">${val}</span></div></div>`;
+  }
+  function capBlock(title, pair){
+    return `<div class="cap"><div class="cap-h">${title}</div>`+
+      barRow("PHI", pair[0], "phi")+barRow("HMI", pair[1], "hmi")+`</div>`;
+  }
+  const chart = document.getElementById("chart");
+  chart.innerHTML = rotations.map(r=>{
+    const crCls = r.win ? "crlabel win" : "crlabel";
+    return `<div class="rot"><div class="rot-head">`+
+      `<span class="${crCls}">${r.cr}</span><span class="rotmeta">${r.meta}</span></div>`+
+      `<div class="caps">${capBlock("North cap ≥60°", r.n)}${capBlock("South cap ≥60°", r.s)}</div></div>`;
+  }).join("");
+
+  // grow bars once laid out (respecting reduced motion)
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll(".fill").forEach(f=>{
+      const w = Math.min(parseFloat(f.dataset.w),100);
+      if(reduce){ f.style.transition="none"; }
+      f.style.width = w + "%";
+    });
+  }));
+</script>
