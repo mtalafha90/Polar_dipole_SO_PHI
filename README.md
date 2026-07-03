@@ -327,6 +327,16 @@ python scripts/plot_campaign_summary.py --campaign-dir baseline_outputs \
   time (colored by hour of day), vs SolO–Sun distance, and vs SolO–Earth
   longitude separation, and prints a trend/cluster summary
   (`baseline_outputs/milestone/plots/calibration_drift.png`).
+- `calibration_resolution_test.py` attributes the sub-unity calibration
+  slope: it re-runs the regression with the co-observed HMI map smoothed to
+  a range of Gaussian widths, and reports the slope-vs-FWHM curve. A slope
+  that climbs toward 1 as HMI is degraded to PHI-like resolution shows the
+  deficit is resolution (flux cancellation in the coarser PHI pixel), not
+  instrument scale or vantage.
+
+  ```bash
+  python scripts/calibration_resolution_test.py --dates 20250214-20250301 --fwhms 0,1,2,3,5,8
+  ```
 - `compare_reference_dipole.py` computes g₁₀ from a standard HMI synoptic
   chart (local FITS via `--reference`, or fetched by
   `--car-rot <N>` from `hmi.synoptic_mr_polfil_720s`) and tabulates every
@@ -380,6 +390,13 @@ python scripts/run_sft_polar_experiment.py --maps-dir out/cr_2296/milestone \
 
 Outputs (`<maps-dir>/sft_polar/`): `sft_polar_comparison.csv`,
 `sft_polar_reversals.csv`, injected profiles, and a figure.
+`plot_sft_polar.py` redraws a publication figure from those outputs
+(initial conditions + g₁₀(t) with reversal markers and the headline
+Δ-first-reversal), without re-running the SFT:
+
+```bash
+python scripts/plot_sft_polar.py --sft-dir baseline_outputs/cr_2296/milestone/sft_polar
+```
 
 ---
 

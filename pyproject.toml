@@ -38,6 +38,8 @@ plot-campaign-summary = "scripts.plot_campaign_summary:main"
 compare-reference-by-rotation = "scripts.compare_reference_by_rotation:main"
 run-sft-from-maps = "scripts.run_sft_from_maps:main"
 run-sft-polar-experiment = "scripts.run_sft_polar_experiment:main"
+plot-sft-polar = "scripts.plot_sft_polar:main"
+calibration-resolution-test = "scripts.calibration_resolution_test:main"
 
 [tool.setuptools]
 py-modules = ["baseline_config"]
