@@ -92,6 +92,17 @@ applied only when explicitly requested and only when r exceeds a floor
 (default 0.5), and — see §3 — only when the two spacecraft actually
 co-observe.
 
+The sub-unity slope is a **resolution** effect, not an instrument-scale or
+vantage error. Re-running the regression on the 112 co-observing 2025 cases
+with the HMI map progressively smoothed
+(`calibration_resolution_test.py`), the mean slope climbs monotonically
+0.56 → 0.63 → 0.80 → 0.88 → 0.98 → 1.08 at Gaussian FWHM 0, 1, 2, 3, 5, 8
+PHI-grid pixels, crossing unity near 5 px, while the correlation peaks
+(r ≈ 0.93) at FWHM 2–3 px. That is the signature of PHI's coarser plate
+scale: fine mixed-polarity structure cancels within a PHI resolution
+element so PHI reads low, and degrading HMI to the same resolution both
+restores the scale (slope → 1) and maximises the correlation.
+
 ## 3. Construction of merged magnetic maps
 
 Three products are built on a common Carrington grid
@@ -161,6 +172,18 @@ dominates the north cap by an order of magnitude (51% and 37% vs 3% and
 is coverage — counts of observed bins — it is independent of calibration
 and of the polar-fill assumption; it is the campaign's most robust finding.
 [Figure: `campaign_polar_advantage.png`, from `plot_campaign_summary.py`.]
+
+The table uses the conservative limb cut µ_min = 0.4 (only pixels within
+~66° of disk centre). The *sign* of the advantage is robust, but its
+*magnitude* depends on how much near-limb extrapolation one admits: at
+µ_min = 0.25 (out to ~76°), where the poles enter through grazing-angle
+pixels that the 1/µ^α conversion amplifies unreliably, HMI's April
+north-cap fill rises from 3% to 33% and PHI's from 51% to 86% — the ratio
+falls from ~16× to ~2.6×, but PHI still leads. The order-of-magnitude
+figure is thus a statement about *reliable* (high-µ) coverage: under the
+cut where HMI's radial field is trustworthy it cannot constrain the cap at
+all, whereas PHI sees it near disk centre. PHI provides the more reliable
+polar constraint at either cut.
 
 ### 4.3 Vantage effect on the dipole
 
@@ -267,16 +290,23 @@ refusing to construct a blended product from two disjoint hemispheres.
 - **LOS→radial approximation.** B_r ≈ B_los/µ^α is poor on strong active-
   region fields; the quiet-Sun restriction (|B_r| ≤ 50 G) shrinks the
   cross-vantage project-mode gap, and vector inversions would remove this
-  error class. The α sensitivity is quantified by `alpha_sensitivity_sweep`.
-- **Calibration drift.** The per-case slope declines with SolO–Sun distance
-  (0.75 at 0.42 AU → 0.50 at 0.52 AU in CR 2264) and collapses at large
-  separation; a resolution-degradation test (smoothing HMI to PHI's
-  per-case plate scale before the regression) is used to attribute the
-  low-B₀ drift to resolution rather than vantage.
-- **Coverage.** Per-rotation windows have partial longitude coverage, which
-  (§4.5) dominates the uncertainty on the *absolute* 2025 g₁₀; denser PHI
-  synoptic programmes would close this. Differential and coverage
-  statements are robust against it.
+  error class. The α sensitivity is sub-dominant: over α = 0.6–1.0
+  (`alpha_sensitivity_sweep`) the PHI dipole varies by only ~3% (0.31 →
+  0.30 G) and HMI by ~9% (0.37 → 0.40 G) — smaller than the case-to-case
+  scatter and far smaller than the fill-mode spread below.
+- **Calibration slope is resolution.** The sub-unity PHI-vs-HMI slope
+  (~0.56, and its decline with SolO–Sun distance) is closed by degrading
+  HMI to PHI's resolution: the slope rises to unity near 5 px FWHM with the
+  correlation peaking at 2–3 px (§2). It is a plate-scale effect, not an
+  instrument-scale or vantage error.
+- **Coverage cut.** The polar-advantage *magnitude* depends on the limb cut
+  µ_min (§4.2): ~16× at the conservative µ_min = 0.4 versus ~2.6× at
+  µ_min = 0.25, where HMI admits grazing-angle polar pixels of low
+  reliability. The sign is robust to the cut.
+- **Longitude coverage.** Per-rotation windows have partial longitude
+  coverage, which (§4.5) dominates the uncertainty on the *absolute* 2025
+  g₁₀; denser PHI synoptic programmes would close this. Differential and
+  coverage statements are robust against it.
 - **Fill-mode dependence** remains the largest single uncertainty on
   absolute g₁₀; product-vs-product statements are robust against it.
 - **1-D (axisymmetric) SFT.** Longitude-dependent assimilation, and

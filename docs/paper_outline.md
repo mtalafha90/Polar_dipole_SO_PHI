@@ -204,6 +204,15 @@ April), while Earth's B0 stays at -5 to -7 deg. The polar-cap fill
   sampling. The campaign's robust results are therefore the polar COVERAGE
   and the SFT reversal-timing DIFFERENTIAL (both calibration- and
   fill-independent), not the per-rotation absolute g10.
+- Robustness (Sec. 7): (a) the sub-unity calibration slope is RESOLUTION —
+  smoothing HMI to PHI's plate scale raises the mean slope 0.56 -> ~1.0
+  (crossing unity near 5 px FWHM, r peaking at 2-3 px;
+  `calibration_resolution_test.py`), not an instrument-scale or vantage
+  error; (b) the coverage-advantage MAGNITUDE depends on the limb cut
+  (~16x at mu_min=0.4 vs ~2.6x at mu_min=0.25, where HMI admits
+  low-reliability grazing-angle polar pixels) but the SIGN is robust;
+  (c) alpha is sub-dominant — over alpha=0.6-1.0 the PHI dipole varies ~3%,
+  HMI ~9% (`alpha_sensitivity_sweep`), below the case scatter.
 - Caveat: for CR 2296/2297 there is no common support (opposite
   hemispheres) and no valid calibration, so the April g10 magnitudes are
   coverage-driven, not a controlled vantage comparison; the 51% / 37% vs
