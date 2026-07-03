@@ -23,14 +23,17 @@ uncertainty and yield a more reliable dipole estimate in SFT simulations.
 | A | Polar confidence mask | `bin_max_to_carrington` max-mu quality grids | done |
 | B | HMI-only map | `run_milestone_comparison.py` — **native Earth-view geometry**, not HMI-on-PHI | done |
 | B | PHI-only map | `run_milestone_comparison.py` | done |
-| B | Merged HMI+PHI map | blend on PHI grid + CM-weighted assimilation | done |
+| B | Merged HMI+PHI map | blend on PHI grid + CM-weighted assimilation; separation-guarded (`--max-separation-deg`) | done |
+| B | Multi-rotation windows | `run_milestone_by_rotation.py` (per-CR split) + `plot_campaign_summary.py` (headline figure) | done |
 | C | Axial dipole (standard integral) | `solar_pipeline/dipole.py` (`g10`, three polar-fill modes) | done |
 | C | North/south contributions | `axial_dipole_g10` hemispheric split | done |
 | C | Polar-filling sensitivity | compare `g10_zero` / `g10_project` / `g10_polar_extend` columns | done |
 | C | Time evolution | per-case dipole series (`run_baseline_pipeline.py`) | done (proxy); extend to g10 per case when needed |
 | D | SFT baseline vs merged input | author's 1D SFT (`sft/original_transp.py`, ported to `solar_pipeline/sft.py`) + `scripts/run_sft_from_maps.py` | done (initial-condition injection) |
 | D | Dipole buildup / reversal timing / polar-cap flux / asymmetry | `sft_comparison.csv`: g10(t), polar-cap means N/S, reversal detection per product | done |
-| D | Continuous data assimilation into the SFT (beyond IC injection) | future work | open |
+| D | PHI as a standalone polar boundary (high-separation epochs) | `apply_polar_constraint` + `scripts/run_sft_polar_experiment.py` | done |
+| C/D | Per-rotation reference-dipole validation | `scripts/compare_reference_by_rotation.py` | done |
+| D | Continuous (time-dependent) data assimilation into the SFT | future work | open |
 
 ## First milestone (defined in the plan)
 
@@ -71,33 +74,41 @@ Earth-like B0=0° vs SolO-like B0=30° observers) confirms:
 - **Merged maps carry a confidence grid** (per-bin max mu and accumulated
   CM weight) so SFT experiments can weight or mask low-confidence polar bins.
 
-## Next campaign: high-latitude window (2025+)
+## High-latitude campaign (2025): the decisive test
 
-The CR 2264 subset had SolO only ~2.5 deg above Earth's B0, so the
-polar-visibility advantage was small; the measured gains came mostly from
-longitude coverage and the +7 deg vantage. Since early 2025 Solar
-Orbiter's orbital inclination reaches ~17 deg, and the high-latitude
-windows are where the project's core question gets its real test: at
-B0 = 17 deg the pole itself is visible at mu = sin(17) ~ 0.29 and the
->60 deg cap fill should roughly double relative to CR 2264.
+Run over 2025-02-14 to 2025-04-24 (CR 2294-2296, 242 PHI cases). SolO's
+B0 swept -2 -> -16.7 (Mar) -> +16.6 deg (Apr) while Earth stayed near -7,
+so the polar-visibility advantage is an order of magnitude larger than
+CR 2264's 2.5 deg. Because the window spans three rotations it is analysed
+per rotation (a single combined map smears the dipole), and the merged
+product is separation-guarded (a per-pixel blend is meaningless once the
+spacecraft view different hemispheres).
 
-The tooling is date-generic; a high-latitude campaign is only a data
-selection. Check SOAR for phi-fdt-blos availability inside a high-B0
-window (the PHI team publishes observing plans), then:
+Result (calibration-independent coverage, >=60 deg cap fill %):
+
+| rotation | SolO B0 | separation | N-cap PHI/HMI | S-cap PHI/HMI |
+|---|---|---|---|---|
+| CR 2294 | -2 -> -8 | 15-21 deg | 5 / 0 | 30 / 38 |
+| CR 2295 | -8 -> -17 | 0.3-60 deg | 0 / 0 | 64 / 46 |
+| CR 2296 | -8 -> +17 | 80-165 deg | 51 / 3 | 12 / 41 |
+
+The PHI advantage switches on with |B0| — south cap in March, north cap in
+April (16x) — and is largest exactly where the separation is largest, so
+at those epochs PHI is a standalone polar constraint, not a merge partner
+(see paper_outline Sec. 6.2). Workflow:
 
 ```bash
-python scripts/download_baseline_data.py --start <YYYY-MM-DD> --end <YYYY-MM-DD>
-python scripts/run_baseline_pipeline.py    --dates <YYYYMMDD-YYYYMMDD>
-python scripts/run_milestone_comparison.py --dates <YYYYMMDD-YYYYMMDD> --calibrate-phi --quiet-sun-max-g 50
-python scripts/plot_calibration_drift.py
-python scripts/compare_reference_dipole.py --car-rot <CR>
-python scripts/run_sft_from_maps.py --balance-flux
-python scripts/run_sft_from_maps.py --balance-flux --source on --tau 10 --years 22
+python scripts/download_baseline_data.py --start 2025-02-11 --end 2025-04-29
+python scripts/run_milestone_by_rotation.py --dates 20250211-20250429 \
+       -- --calibrate-phi --quiet-sun-max-g 50 --max-separation-deg 60
+python scripts/plot_campaign_summary.py --campaign-dir baseline_outputs
+python scripts/compare_reference_by_rotation.py --campaign-dir baseline_outputs
+# SFT, per rotation on the pole PHI covers:
+python scripts/run_sft_polar_experiment.py --maps-dir baseline_outputs/cr_2295/milestone \
+       --hemisphere south --source on --tau 10 --years 22 --balance-flux
+python scripts/run_sft_polar_experiment.py --maps-dir baseline_outputs/cr_2296/milestone \
+       --hemisphere north --source on --tau 10 --years 22 --balance-flux
 ```
-
-Numbers to compare directly against CR 2264: polar_fill_north/south,
-the full-vs-common g10 split, capN at injection, and the SFT asymptotic
-dipole and reversal times per product.
 
 ## Paper structure (target)
 

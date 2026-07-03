@@ -3,11 +3,13 @@
 **Title:** Impact of Solar Orbiter Polar-View Magnetic Constraints on
 Surface Flux Transport Estimates of the Sun's Axial Dipole Moment
 
-All numbers below are measured from the CR 2264 run (24 PHI-FDT cases,
-2022-10-27 to 2022-11-03, matched to hmi.M_720s within 600 s; pipeline
-defaults R_INNER=0.70, R_OUTER=0.90, MU_MIN=0.40, ALPHA=0.80, 1x1 deg
-Carrington grid, per-case cross-calibration applied, quiet-Sun threshold
-50 G). Placeholders marked [2025] await the high-latitude campaign.
+Numbers in Secs. 2-4 and 6.1 are measured from the CR 2264 run (24 PHI-FDT
+cases, 2022-10-27 to 2022-11-03, matched to hmi.M_720s within 600 s;
+pipeline defaults R_INNER=0.70, R_OUTER=0.90, MU_MIN=0.40, ALPHA=0.80, 1x1
+deg Carrington grid, per-case cross-calibration applied, quiet-Sun
+threshold 50 G). Sec. 6.2 reports the 2025 high-B0 campaign (CR 2294-2296),
+which delivers the decisive polar test; items marked [pending run] await
+SFT/reference runs on the campaign maps.
 
 ## 1. Introduction
 
@@ -97,8 +99,18 @@ Carrington grid, per-case cross-calibration applied, quiet-Sun threshold
 - Injection: zonally averaged B(lat) per product; unobserved latitudes
   enter as B = 0 (the polar-constraint handicap is carried into the
   simulation); net flux balanced before injection.
+- Two injection modes: (i) whole-map injection per product
+  (`run_sft_from_maps.py`), used when PHI and HMI co-observe so a merged
+  map is meaningful; (ii) polar-constraint splice
+  (`run_sft_polar_experiment.py`, `apply_polar_constraint`), used at
+  high-separation epochs where a per-pixel merge is invalid — the initial
+  condition is HMI everywhere except the cap PHI observes, where PHI's
+  zonal field is blended in. Mode (ii) is the appropriate one for the 2025
+  campaign's decisive rotations (Sec. 6.2).
 
 ## 6. Results
+
+### 6.1 Method demonstration (CR 2264, low-B0)
 
 - Decay experiment (source off, 11 yr): PHI-informed initial condition
   injects capN(>70 deg) = +1.80 G vs +0.22 G for HMI-only; asymptotic
@@ -111,8 +123,69 @@ Carrington grid, per-case cross-calibration applied, quiet-Sun threshold
   The memory decays as the source dominates: second-reversal spread
   shrinks to 0.32 yr (14.87/15.19/14.89) and final dipoles converge
   (3.41/3.17/3.40 G).
-- [2025] High-B0 window: repeat both experiments where the polar
-  visibility advantage is ~17 deg instead of 2.5 deg.
+- Caveat: at a 2.5 deg B0 advantage this demonstrates the propagation
+  mechanism, not a large polar-visibility gain; the decisive test is the
+  high-inclination window below.
+
+### 6.2 The decisive polar test (2025 high-B0 campaign)
+
+Data: SO/PHI-FDT blos matched to hmi.M_720s over 2025-02-14 to 2025-04-24
+(242 PHI cases; time matches Delta-t = 2-3 s). The window spans three
+Carrington rotations, so it is analysed per rotation
+(`run_milestone_by_rotation.py`) rather than as one smeared synoptic map,
+and the merged product excludes cases beyond a 60 deg SolO-Earth
+Carrington-longitude separation (`--max-separation-deg 60`), since a
+per-pixel PHI+HMI blend is meaningless once the two spacecraft view
+different hemispheres.
+
+The orbital driver: SolO's B0 sweeps from near-ecliptic (-2 deg) to deep
+south (-16.7 deg, late March) to high north (+16.6 deg, late April), while
+Earth's B0 stays at -5 to -7 deg. The polar-cap fill (>=60 deg, in %)
+tracks it directly:
+
+| rotation | dates | SolO B0 | sep | N-cap PHI/HMI | S-cap PHI/HMI |
+|---|---|---|---|---|---|
+| CR 2294 | Feb 14 - Mar 1 | -2 -> -8 | 15-21 deg | 5 / 0 | 30 / 38 |
+| CR 2295 | Mar 2 - Mar 28 | -8 -> -17 | 0.3-60 deg | 0 / 0 | **64 / 46** |
+| CR 2296 | Mar 31 - Apr 24 | -8 -> +17 | 80-165 deg | **51 / 3** | 12 / 41 |
+
+- Coverage (calibration-independent, the robust headline): PHI overtakes
+  HMI on the south cap in March (64% vs 46%) as SolO dives south, and on
+  the north cap in April (51% vs 3%, a 16x advantage) as SolO crosses to a
+  northern view. In the near-ecliptic first rotation PHI has no advantage
+  (HMI's south cap is marginally better). The advantage switches on with
+  |B0| exactly as hypothesised. [Figure: campaign_polar_advantage.png,
+  from `plot_campaign_summary.py`.]
+- Vantage effect on the dipole: on common support in CR 2295 the two
+  vantages disagree on the SIGN of the south-polar g10 contribution
+  (project mode: PHI +0.21 vs HMI -0.10 G on the same bins). HMI's
+  south-cap Br is a near-limb 1/mu^alpha extrapolation there, unreliable
+  near solar maximum where the polar field is weak and reversing; PHI sees
+  the same bins near disk centre and gives the better-constrained term.
+- Key structural finding: PHI's polar advantage is largest exactly when
+  the SolO-Earth separation is largest (both are driven by the same
+  orbital motion). When separation is small (Feb, and the Mar 13
+  conjunction) a per-pixel merge is valid but PHI's polar advantage is
+  small; when the advantage is decisive (April north cap) the separation
+  is 80-165 deg and the merge is meaningless (the merged product is
+  correctly empty). The two vantages are therefore complementary in TIME,
+  not co-registered in space: PHI's value is as an independent polar
+  constraint at the epochs Earth cannot see a given pole, not as a
+  pixel-level merge partner. This reframes the deliverable and is enforced
+  by the separation guard.
+- SFT impact via the polar-constraint splice
+  (`run_sft_polar_experiment.py`; Sec. 5 mode ii), run per rotation on the
+  pole PHI covers — south from CR 2295, north from CR 2296:
+  [pending run on the campaign maps] Delta g10 and Delta first-reversal of
+  phi_constrained vs hmi. Synthetic validation of the splice gives a clean
+  Delta g10 driven entirely by the injected cap.
+- Per-rotation reference check against hmi.synoptic_mr_polfil_720s
+  (`compare_reference_by_rotation.py`): [pending run] g10 of each product
+  vs the standard chart, per CR.
+- Caveat: for CR 2296 there is no common support (opposite hemispheres)
+  and no valid calibration, so the April g10 magnitudes are coverage-
+  driven, not a controlled vantage comparison; the 51% vs 3% coverage
+  result is robust, the April g10 is provisional.
 
 ## 7. Uncertainties and limitations
 
@@ -132,12 +205,23 @@ Carrington grid, per-case cross-calibration applied, quiet-Sun threshold
 
 ## 8. Conclusions
 
-- Merged PHI+HMI synoptic maps are constructible and validated
-  (map-space r ~ 0.9 between independent vantages; ~0.05 G common-support
-  dipole agreement).
+- Merged PHI+HMI synoptic maps are constructible and validated at small
+  SolO-Earth separation (map-space r ~ 0.9 between independent vantages;
+  ~0.05 G common-support dipole agreement).
 - The dipole information added by a second vantage resides in its unique
   (high-latitude) coverage; SFT propagates a factor ~3 difference in
   long-term dipole from it even at a 2.5 deg B0 advantage.
+- The 2025 high-B0 campaign delivers the decisive test: PHI's polar-cap
+  coverage overtakes HMI by up to 16x (north cap 51% vs 3% in April), and
+  the advantage switches on with SolO's heliolatitude exactly as
+  hypothesised — south cap in March, north cap in April.
+- Central reframing: PHI's polar advantage is largest exactly when the
+  SolO-Earth separation is largest, so at the decisive epochs a per-pixel
+  merge is invalid. The scientific value of the polar view is as an
+  INDEPENDENT polar constraint (a boundary condition for SFT) at times
+  Earth cannot see a pole, not as a co-registered merge partner. The two
+  vantages are complementary in time, not space.
 - The methodology, its systematics (orientation, calibration,
-  deprojection, polar filling), and open-source tooling are established;
-  the decisive polar test is the 2025 high-inclination window.
+  deprojection, polar filling, co-observation separation), and open-source
+  tooling are established end to end, from download through the
+  polar-constrained SFT experiment.
