@@ -312,6 +312,15 @@ python scripts/run_milestone_by_rotation.py --dates 20250211-20250429 \
        -- --calibrate-phi --quiet-sun-max-g 50 --max-separation-deg 60
 ```
 
+`plot_campaign_summary.py` then turns those per-rotation outputs into the
+campaign's headline figure — SolO's B0 excursion and the PHI-vs-HMI north/
+south polar-cap fill per rotation, with the separation range annotated:
+
+```bash
+python scripts/plot_campaign_summary.py --campaign-dir baseline_outputs \
+       --out baseline_outputs/campaign_polar_advantage.png
+```
+
 ### 6d. Calibration drift and reference checks
 
 - `plot_calibration_drift.py` plots the PHI-vs-HMI slope and Pearson r vs
