@@ -35,6 +35,7 @@ download-baseline-data = "scripts.download_baseline_data:main"
 run-milestone-comparison = "scripts.run_milestone_comparison:main"
 run-milestone-by-rotation = "scripts.run_milestone_by_rotation:main"
 plot-campaign-summary = "scripts.plot_campaign_summary:main"
+compare-reference-by-rotation = "scripts.compare_reference_by_rotation:main"
 run-sft-from-maps = "scripts.run_sft_from_maps:main"
 run-sft-polar-experiment = "scripts.run_sft_polar_experiment:main"
 

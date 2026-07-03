@@ -332,6 +332,14 @@ python scripts/plot_campaign_summary.py --campaign-dir baseline_outputs \
   `--car-rot <N>` from `hmi.synoptic_mr_polfil_720s`) and tabulates every
   milestone product/fill-mode against it
   (`reference_dipole_comparison.csv`).
+- `compare_reference_by_rotation.py` runs that check for every rotation of a
+  per-CR campaign — it discovers each `cr_<N>/milestone` directory, fetches
+  the matching `--car-rot N` chart, and collects a combined
+  `reference_dipole_by_rotation.csv` at the campaign root:
+
+  ```bash
+  python scripts/compare_reference_by_rotation.py --campaign-dir baseline_outputs
+  ```
 
 ### 6e. SFT experiment (`run_sft_from_maps.py`)
 
