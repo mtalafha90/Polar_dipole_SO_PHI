@@ -175,18 +175,39 @@ April), while Earth's B0 stays at -5 to -7 deg. The polar-cap fill
   pixel-level merge partner. This reframes the deliverable and is enforced
   by the separation guard.
 - SFT impact via the polar-constraint splice
-  (`run_sft_polar_experiment.py`; Sec. 5 mode ii), run per rotation on the
-  pole PHI covers — south from CR 2295, north from CR 2296:
-  [pending run on the campaign maps] Delta g10 and Delta first-reversal of
-  phi_constrained vs hmi. Synthetic validation of the splice gives a clean
-  Delta g10 driven entirely by the injected cap.
+  (`run_sft_polar_experiment.py`; Sec. 5 mode ii; source on, tau = 10 yr,
+  22 yr, flux-balanced): the effect is concentrated exactly where the Earth
+  view is blind. Constraining the NORTH cap from CR 2296 (HMI cap fill 3%)
+  injects capN = -1.51 G where HMI has ~0, flips the initial dipole sign
+  (g10(0) = -0.26 vs +0.10 HMI-only), and shifts the first predicted polar
+  reversal by -1.68 yr (0.68 vs 2.36 yr). Constraining the SOUTH cap from
+  CR 2295 (HMI cap fill 46%, co-observed) changes essentially nothing
+  (Delta first-reversal -0.004 yr, Delta g10_final -0.6 mG), because HMI
+  already constrains that pole. The 22-yr dipoles converge to ~+3.1 G in
+  all cases as the deterministic source dominates — the memory of the polar
+  constraint lives in the reversal TIMING, not the asymptote. The PHI polar
+  view adds SFT-relevant information only where the Earth view lacks it, so
+  its value is maximal at the high-separation north epoch — precisely the
+  standalone-constraint regime.
 - Per-rotation reference check against hmi.synoptic_mr_polfil_720s
-  (`compare_reference_by_rotation.py`): [pending run] g10 of each product
-  vs the standard chart, per CR.
-- Caveat: for CR 2296 there is no common support (opposite hemispheres)
-  and no valid calibration, so the April g10 magnitudes are coverage-
-  driven, not a controlled vantage comparison; the 51% vs 3% coverage
-  result is robust, the April g10 is provisional.
+  (`compare_reference_by_rotation.py`): the standard polar-filled chart has
+  a small, negative axial dipole that grows more negative through the
+  window (g10_ref = -0.21, -0.17, -0.18, -0.39 G for CR 2294-2297),
+  consistent with the cycle-25 polar field rebuilding near maximum. The
+  partial-coverage milestone products do not reproduce this small signal in
+  sign (project mode: PHI / HMI / merged all positive, +0.3 to +1.0 G;
+  HMI-project is nearest the reference but still off by ~0.5 G — and the
+  reference is itself an HMI product, so proximity to it favours the
+  HMI-view map by construction). Unlike the dense 8-day CR 2264 window
+  (PHI-project matched the reference to 0.04 G), a near-zero true dipole
+  sampled from partial per-rotation longitude coverage is swamped by
+  sampling. The campaign's robust results are therefore the polar COVERAGE
+  and the SFT reversal-timing DIFFERENTIAL (both calibration- and
+  fill-independent), not the per-rotation absolute g10.
+- Caveat: for CR 2296/2297 there is no common support (opposite
+  hemispheres) and no valid calibration, so the April g10 magnitudes are
+  coverage-driven, not a controlled vantage comparison; the 51% / 37% vs
+  3% / 2% coverage result is robust, the April g10 is provisional.
 
 ## 7. Uncertainties and limitations
 
@@ -222,6 +243,12 @@ April), while Earth's B0 stays at -5 to -7 deg. The polar-cap fill
   INDEPENDENT polar constraint (a boundary condition for SFT) at times
   Earth cannot see a pole, not as a co-registered merge partner. The two
   vantages are complementary in time, not space.
+- Quantified impact: adding PHI's north-cap constraint at the April epoch
+  where HMI is blind (3% fill) shifts the first SFT-predicted polar
+  reversal by -1.68 yr, while adding its south-cap constraint where HMI
+  co-observes (46% fill) changes nothing (-0.004 yr). The polar view moves
+  the prediction only where the Earth view is blind — the concrete payoff
+  of the standalone-constraint framing.
 - The methodology, its systematics (orientation, calibration,
   deprojection, polar filling, co-observation separation), and open-source
   tooling are established end to end, from download through the
