@@ -109,8 +109,14 @@ def main():
         if not grid_path.exists():
             continue
         grid = np.load(grid_path)
+        # a product can be legitimately empty (e.g. the merged product when
+        # every case is separation-guarded out at high SolO-Earth
+        # separation); emit NaN rows rather than crashing the whole check
+        has_data = bool(np.any(np.isfinite(grid)))
+        if not has_data:
+            print(f"  {product}: empty grid (no observed bins); reporting NaN")
         for mode in FILL_MODES:
-            g10 = axial_dipole_g10(grid, lat_centers, mode=mode)["g10"]
+            g10 = axial_dipole_g10(grid, lat_centers, mode=mode)["g10"] if has_data else float("nan")
             rows.append({
                 "product": product,
                 "mode": mode,
