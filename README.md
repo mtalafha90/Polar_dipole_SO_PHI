@@ -10,9 +10,11 @@ and SFT predictions compared with Earth-view (HMI) data alone.
 Documentation: the research plan and code map are in
 [`docs/RESEARCH_PLAN.md`](docs/RESEARCH_PLAN.md), the condensed results
 ledger in [`docs/paper_outline.md`](docs/paper_outline.md), the full
-written draft in [`docs/manuscript.md`](docs/manuscript.md), and a
+written draft in [`docs/manuscript.md`](docs/manuscript.md), a
 self-contained shareable results page in
-[`docs/results_brief.html`](docs/results_brief.html).
+[`docs/results_brief.html`](docs/results_brief.html), and a
+clean-run reproduction runbook in
+[`docs/REPRODUCE.md`](docs/REPRODUCE.md).
 
 The pipeline provides:
 
