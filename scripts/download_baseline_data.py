@@ -167,12 +167,16 @@ def _fetch_url(url: str, dest: Path) -> None:
     import requests
 
     tmp = dest.with_suffix(dest.suffix + ".part")
-    with requests.get(url, stream=True, timeout=300) as resp:
-        resp.raise_for_status()
-        with open(tmp, "wb") as f:
-            for chunk in resp.iter_content(1 << 20):
-                f.write(chunk)
-    tmp.rename(dest)
+    try:
+        with requests.get(url, stream=True, timeout=300) as resp:
+            resp.raise_for_status()
+            with open(tmp, "wb") as f:
+                for chunk in resp.iter_content(1 << 20):
+                    f.write(chunk)
+        tmp.rename(dest)
+    finally:
+        if tmp.exists():
+            tmp.unlink()  # clean up a partial download on failure
 
 
 def download_hmi(
@@ -211,6 +215,7 @@ def download_hmi(
     print(f"Need {len(wanted)} unique HMI M_720s records")
 
     files = []
+    failures = []
     n_total = len(wanted)
     for i, t_rec in enumerate(sorted(wanted), start=1):
         expected = hmi_dir / f"hmi.M_720s.{parse_t_rec(t_rec).strftime('%Y%m%d_%H%M%S')}_TAI.magnetogram.fits"
@@ -219,36 +224,73 @@ def download_hmi(
             files.append(expected)
             continue
         ds = f"hmi.M_720s[{t_rec}]{{magnetogram}}"
-        print(f"  [{i}/{n_total}] fetching {ds}")
 
-        # No-registration path: rs_list returns the SUMS path for records
-        # that are online at JSOC, downloadable over plain HTTP. The same
-        # query also returns the DRMS keywords, which must be injected into
-        # the file: raw SUMS segments have no WCS header of their own.
-        keys, segs = client.query(ds, key=HMI_HEADER_KEYS, seg="magnetogram")
-        seg_path = str(segs["magnetogram"].iloc[0]) if len(segs) else ""
-        if seg_path.startswith("/"):
-            _fetch_url(JSOC_BASE + seg_path, expected)
-            _patch_fits_header(expected, keys.iloc[0].to_dict())
+        try:
+            # rs_list returns the SUMS path AND the DRMS keywords (raw SUMS
+            # segments have no WCS header of their own, so the keys must be
+            # injected below).
+            keys, segs = client.query(ds, key=HMI_HEADER_KEYS, seg="magnetogram")
+            if not len(segs):
+                print(f"  [{i}/{n_total}] no record for {t_rec}")
+                failures.append(t_rec)
+                continue
+            seg_path = str(segs["magnetogram"].iloc[0])
+            keys_row = keys.iloc[0].to_dict() if len(keys) else {}
+
+            fetched = False
+            # Primary, no-registration path: direct SUMS HTTP fetch. Not all
+            # SUMS partitions are web-exposed (common for recent data), so a
+            # returned path can still 404 — fall back to export in that case.
+            if seg_path.startswith("/"):
+                try:
+                    print(f"  [{i}/{n_total}] fetching {ds}")
+                    _fetch_url(JSOC_BASE + seg_path, expected)
+                    fetched = True
+                except Exception as exc:
+                    tail = "trying export" if email else "need --jsoc-email to retry via export"
+                    print(f"    direct SUMS fetch failed ({exc}); {tail}")
+
+            # Fallback: a real export request (requires a registered email).
+            if not fetched:
+                if not email:
+                    failures.append(t_rec)
+                    continue
+                print(f"  [{i}/{n_total}] exporting {ds}")
+                export = client.export(ds, method="url_quick", protocol="as-is", email=email)
+                result = export.download(str(hmi_dir))
+                for local in result["download"]:
+                    local = Path(local)
+                    if local.name != expected.name:
+                        local.rename(expected)
+                    fetched = True
+                if not fetched:
+                    failures.append(t_rec)
+                    continue
+
+            _patch_fits_header(expected, keys_row)
             files.append(expected)
+        except Exception as exc:
+            # one bad record must never abort a multi-month download; the run
+            # is idempotent, so a later re-run resumes from what is missing
+            print(f"  [{i}/{n_total}] ERROR on {t_rec}: {exc}")
+            failures.append(t_rec)
             continue
 
-        # Offline record: needs a real JSOC export request (registered email).
+    print(f"\nDownloaded {len(files)} HMI files into {hmi_dir.resolve()}")
+    if failures:
+        print(f"WARNING: {len(failures)}/{n_total} records could not be fetched:")
+        for t in failures[:10]:
+            print(f"  {t}")
+        if len(failures) > 10:
+            print(f"  ... and {len(failures) - 10} more")
         if not email:
-            raise SystemExit(
-                f"JSOC record {t_rec} is not online in SUMS, so it needs an export "
-                "request, which requires a JSOC-registered email. Register at "
-                "http://jsoc.stanford.edu/ajax/register_email.html and re-run with "
-                "--jsoc-email <address> (or set JSOC_EXPORT_EMAIL)."
+            print(
+                "These records were not directly HTTP-accessible from JSOC SUMS "
+                "(typical for recent data). Register a JSOC email "
+                "(http://jsoc.stanford.edu/ajax/register_email.html) and re-run with "
+                "--jsoc-email <address> to fetch them via export. The download is "
+                "idempotent, so it resumes from what is missing."
             )
-        export = client.export(ds, method="url_quick", protocol="as-is", email=email)
-        result = export.download(str(hmi_dir))
-        for local in result["download"]:
-            local = Path(local)
-            if local.name != expected.name:
-                local.rename(expected)
-            files.append(expected)
-    print(f"Downloaded {len(files)} HMI files into {hmi_dir.resolve()}")
     return files
 
 

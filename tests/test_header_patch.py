@@ -10,7 +10,7 @@ from astropy.io import fits
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from scripts.download_baseline_data import _patch_fits_header
+from scripts.download_baseline_data import _patch_fits_header, _fetch_url
 
 
 def _write_bare_segment(path: Path) -> None:
@@ -73,6 +73,40 @@ def test_patch_compressed_segment(tmp_path):
         assert image.header["CRPIX1"] == 16.5
         assert image.header["CROTA2"] == 180.07
         assert np.array_equal(image.data, data)
+
+
+def test_fetch_url_cleans_partial_on_failure(tmp_path, monkeypatch):
+    # a failed fetch (e.g. the 404 seen for some recent JSOC SUMS paths) must
+    # not leave a half-written .part file behind, and must raise so the
+    # per-record loop can fall back / record the failure
+    import requests
+
+    dest = tmp_path / "hmi.M_720s.20250225_150000_TAI.magnetogram.fits"
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def raise_for_status(self):
+            raise requests.HTTPError("404 Client Error: Not Found")
+
+        def iter_content(self, n):
+            return iter(())
+
+    monkeypatch.setattr(requests, "get", lambda *a, **k: _Resp())
+
+    raised = False
+    try:
+        _fetch_url("http://jsoc.stanford.edu/SUM/x", dest)
+    except requests.HTTPError:
+        raised = True
+
+    assert raised
+    assert not dest.exists()
+    assert not dest.with_suffix(dest.suffix + ".part").exists()
 
 
 if __name__ == "__main__":

@@ -149,13 +149,17 @@ warning, matching the pipeline's own rejection rule.
 Useful flags: `--start/--end`, `--phi-only` / `--hmi-only`,
 `--hmi-window-min`. Downloads are idempotent (existing files kept).
 
-Online JSOC records are fetched directly from SUMS over HTTP with **no
-registration**; the DRMS keywords (WCS, observer geometry, CROTA2) are
-queried alongside and written into each file's header, since raw SUMS
-segments carry no metadata of their own. Only records that have gone offline
-need a real export request — pass `--jsoc-email` (or set
-`JSOC_EXPORT_EMAIL`) with an address registered at
-http://jsoc.stanford.edu/ajax/register_email.html.
+JSOC records are fetched directly from SUMS over HTTP with **no
+registration** where possible; the DRMS keywords (WCS, observer geometry,
+CROTA2) are queried alongside and written into each file's header, since raw
+SUMS segments carry no metadata of their own. Not all SUMS partitions are
+web-exposed (common for **recent data**), so some records' direct paths
+return 404 — the downloader falls back to a real export request when
+`--jsoc-email` (or `JSOC_EXPORT_EMAIL`) is set with an address registered at
+http://jsoc.stanford.edu/ajax/register_email.html, otherwise it records
+those and continues. A single unfetchable record never aborts the run, and
+because the download is idempotent, re-running (optionally after registering
+an email) resumes from what is missing.
 
 HMI files downloaded before header injection existed can be repaired in
 place (no re-download):
