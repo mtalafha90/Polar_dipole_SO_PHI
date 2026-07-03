@@ -129,33 +129,34 @@ SFT/reference runs on the campaign maps.
 
 ### 6.2 The decisive polar test (2025 high-B0 campaign)
 
-Data: SO/PHI-FDT blos matched to hmi.M_720s over 2025-02-14 to 2025-04-24
-(242 PHI cases; time matches Delta-t = 2-3 s). The window spans three
-Carrington rotations, so it is analysed per rotation
-(`run_milestone_by_rotation.py`) rather than as one smeared synoptic map,
-and the merged product excludes cases beyond a 60 deg SolO-Earth
-Carrington-longitude separation (`--max-separation-deg 60`), since a
-per-pixel PHI+HMI blend is meaningless once the two spacecraft view
-different hemispheres.
+Data: SO/PHI-FDT blos matched to hmi.M_720s over 2025-02-14 to 2025-04-29
+(time matches Delta-t = 2-3 s). The window spans four Carrington
+rotations, so it is analysed per rotation (`run_milestone_by_rotation.py`)
+rather than as one smeared synoptic map, and the merged product excludes
+cases beyond a 60 deg SolO-Earth Carrington-longitude separation
+(`--max-separation-deg 60`), since a per-pixel PHI+HMI blend is
+meaningless once the two spacecraft view different hemispheres.
 
 The orbital driver: SolO's B0 sweeps from near-ecliptic (-2 deg) to deep
-south (-16.7 deg, late March) to high north (+16.6 deg, late April), while
-Earth's B0 stays at -5 to -7 deg. The polar-cap fill (>=60 deg, in %)
-tracks it directly:
+south (-16.7 deg, late March) to a high-north plateau (+16.8 deg, late
+April), while Earth's B0 stays at -5 to -7 deg. The polar-cap fill
+(>=60 deg, in %) tracks it directly:
 
 | rotation | dates | SolO B0 | sep | N-cap PHI/HMI | S-cap PHI/HMI |
 |---|---|---|---|---|---|
 | CR 2294 | Feb 14 - Mar 1 | -2 -> -8 | 15-21 deg | 5 / 0 | 30 / 38 |
 | CR 2295 | Mar 2 - Mar 28 | -8 -> -17 | 0.3-60 deg | 0 / 0 | **64 / 46** |
 | CR 2296 | Mar 31 - Apr 24 | -8 -> +17 | 80-165 deg | **51 / 3** | 12 / 41 |
+| CR 2297 | Apr 26 - Apr 29 | +16.8 (apex) | 168-172 deg | **37 / 2** | 0 / 13 |
 
 - Coverage (calibration-independent, the robust headline): PHI overtakes
   HMI on the south cap in March (64% vs 46%) as SolO dives south, and on
   the north cap in April (51% vs 3%, a 16x advantage) as SolO crosses to a
-  northern view. In the near-ecliptic first rotation PHI has no advantage
-  (HMI's south cap is marginally better). The advantage switches on with
-  |B0| exactly as hypothesised. [Figure: campaign_polar_advantage.png,
-  from `plot_campaign_summary.py`.]
+  northern view; the north advantage persists into the final rotation
+  (37% vs 2%) with SolO at its +16.8 deg apex. In the near-ecliptic first
+  rotation PHI has no advantage (HMI's south cap is marginally better). The
+  advantage switches on with |B0| exactly as hypothesised. [Figure:
+  campaign_polar_advantage.png, from `plot_campaign_summary.py`.]
 - Vantage effect on the dipole: on common support in CR 2295 the two
   vantages disagree on the SIGN of the south-polar g10 contribution
   (project mode: PHI +0.21 vs HMI -0.10 G on the same bins). HMI's

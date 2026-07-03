@@ -76,10 +76,10 @@ Earth-like B0=0° vs SolO-like B0=30° observers) confirms:
 
 ## High-latitude campaign (2025): the decisive test
 
-Run over 2025-02-14 to 2025-04-24 (CR 2294-2296, 242 PHI cases). SolO's
-B0 swept -2 -> -16.7 (Mar) -> +16.6 deg (Apr) while Earth stayed near -7,
-so the polar-visibility advantage is an order of magnitude larger than
-CR 2264's 2.5 deg. Because the window spans three rotations it is analysed
+Run over 2025-02-14 to 2025-04-29 (CR 2294-2297). SolO's B0 swept
+-2 -> -16.7 (Mar) -> +16.8 deg (Apr apex) while Earth stayed near -7, so
+the polar-visibility advantage is an order of magnitude larger than
+CR 2264's 2.5 deg. Because the window spans four rotations it is analysed
 per rotation (a single combined map smears the dipole), and the merged
 product is separation-guarded (a per-pixel blend is meaningless once the
 spacecraft view different hemispheres).
@@ -91,11 +91,13 @@ Result (calibration-independent coverage, >=60 deg cap fill %):
 | CR 2294 | -2 -> -8 | 15-21 deg | 5 / 0 | 30 / 38 |
 | CR 2295 | -8 -> -17 | 0.3-60 deg | 0 / 0 | 64 / 46 |
 | CR 2296 | -8 -> +17 | 80-165 deg | 51 / 3 | 12 / 41 |
+| CR 2297 | +16.8 apex | 168-172 deg | 37 / 2 | 0 / 13 |
 
 The PHI advantage switches on with |B0| — south cap in March, north cap in
-April (16x) — and is largest exactly where the separation is largest, so
-at those epochs PHI is a standalone polar constraint, not a merge partner
-(see paper_outline Sec. 6.2). Workflow:
+April (16x, sustained into the final rotation) — and is largest exactly
+where the separation is largest, so at those epochs PHI is a standalone
+polar constraint, not a merge partner (see paper_outline Sec. 6.2).
+Workflow:
 
 ```bash
 python scripts/download_baseline_data.py --start 2025-02-11 --end 2025-04-29
