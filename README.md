@@ -7,9 +7,12 @@ model from the resulting maps. Its purpose is to test whether adding Solar
 Orbiter's out-of-ecliptic magnetic vantage improves axial-dipole estimates
 and SFT predictions compared with Earth-view (HMI) data alone.
 
-The full research plan is in [`docs/RESEARCH_PLAN.md`](docs/RESEARCH_PLAN.md);
-the paper skeleton with measured results is in
-[`docs/paper_outline.md`](docs/paper_outline.md).
+Documentation: the research plan and code map are in
+[`docs/RESEARCH_PLAN.md`](docs/RESEARCH_PLAN.md), the condensed results
+ledger in [`docs/paper_outline.md`](docs/paper_outline.md), the full
+written draft in [`docs/manuscript.md`](docs/manuscript.md), and a
+self-contained shareable results page in
+[`docs/results_brief.html`](docs/results_brief.html).
 
 The pipeline provides:
 
@@ -70,22 +73,30 @@ package/
     sft.py               # 1D surface flux transport model (Python 3 port)
   scripts/
     __init__.py
-    download_baseline_data.py     # fetch PHI (SOAR) + HMI (JSOC) inputs
-    run_baseline_pipeline.py      # per-case dipole proxy table
-    plot_baseline_summary.py      # regenerate baseline plots
-    alpha_sensitivity_sweep.py    # sweep ALPHA
-    run_synoptic_assimilation.py  # single merged synoptic map
-    run_milestone_comparison.py   # PHI / HMI-native / merged + g10 comparison
-    compare_reference_dipole.py   # g10 vs a standard HMI synoptic chart
-    plot_calibration_drift.py     # calibration slope/r vs time, distance, separation
-    run_sft_from_maps.py          # SFT experiment driven by the maps
+    download_baseline_data.py       # fetch PHI (SOAR) + HMI (JSOC) inputs
+    run_baseline_pipeline.py        # per-case dipole proxy table
+    plot_baseline_summary.py        # regenerate baseline plots
+    alpha_sensitivity_sweep.py      # sweep ALPHA
+    run_synoptic_assimilation.py    # single merged synoptic map
+    run_milestone_comparison.py     # PHI / HMI-native / merged + g10 comparison
+    run_milestone_by_rotation.py    # split a multi-CR window, one run per rotation
+    plot_campaign_summary.py        # per-rotation campaign headline figure
+    compare_reference_dipole.py     # g10 vs a standard HMI synoptic chart
+    compare_reference_by_rotation.py # reference check for every rotation of a campaign
+    plot_calibration_drift.py       # calibration slope/r vs time, distance, separation
+    calibration_resolution_test.py  # attribute the slope deficit to resolution
+    run_sft_from_maps.py            # SFT experiment driven by the maps
+    run_sft_polar_experiment.py     # PHI as a standalone SFT polar boundary constraint
+    plot_sft_polar.py               # publication figure for the polar-constraint run
   sft/
     original_transp.py   # author's original SFT code (verbatim, Python 2)
     README.md            # provenance + port notes
   tests/                 # pytest suite (synthetic-data validation)
   docs/
-    RESEARCH_PLAN.md
-    paper_outline.md
+    RESEARCH_PLAN.md     # research plan + stage/code map
+    paper_outline.md     # condensed results ledger
+    manuscript.md        # full written draft
+    results_brief.html   # self-contained shareable results page
   PHI/
     solo_L2_phi-fdt-blos_*.fits
   HMI/
@@ -111,7 +122,10 @@ pip install -e ".[dev]"       # + pytest
 
 Console commands installed by `pip install -e .`:
 `run-baseline-pipeline`, `plot-baseline-summary`, `download-baseline-data`,
-`run-milestone-comparison`, `run-sft-from-maps`. The remaining scripts
+`run-milestone-comparison`, `run-milestone-by-rotation`,
+`plot-campaign-summary`, `compare-reference-by-rotation`,
+`calibration-resolution-test`, `run-sft-from-maps`,
+`run-sft-polar-experiment`, `plot-sft-polar`. The remaining scripts
 (`alpha_sensitivity_sweep`, `run_synoptic_assimilation`,
 `compare_reference_dipole`, `plot_calibration_drift`) are run as
 `python scripts/<name>.py`.
@@ -223,6 +237,19 @@ python scripts/compare_reference_dipole.py --car-rot 2264
 # 4. SFT experiment driven by the merged maps
 python scripts/run_sft_from_maps.py --balance-flux                       # decay
 python scripts/run_sft_from_maps.py --balance-flux --source on --tau 10 --years 22  # cycle
+```
+
+For a **multi-rotation campaign** (e.g. the 2025 high-B₀ window, §7b), split
+by Carrington rotation and drive the standalone polar-constraint experiment
+instead:
+
+```bash
+python scripts/run_milestone_by_rotation.py --dates 20250211-20250429 \
+       -- --calibrate-phi --quiet-sun-max-g 50 --max-separation-deg 60
+python scripts/plot_campaign_summary.py       --campaign-dir baseline_outputs
+python scripts/compare_reference_by_rotation.py --campaign-dir baseline_outputs
+python scripts/run_sft_polar_experiment.py --maps-dir baseline_outputs/cr_2296/milestone \
+       --hemisphere north --source on --tau 10 --years 22 --balance-flux
 ```
 
 ---
@@ -400,7 +427,9 @@ python scripts/plot_sft_polar.py --sft-dir baseline_outputs/cr_2296/milestone/sf
 
 ---
 
-## 7. Results on the CR 2264 subset (Oct 27 – Nov 3, 2022)
+## 7. Results
+
+### 7a. Method demonstration (CR 2264 subset, Oct 27 – Nov 3, 2022)
 
 Measured from 24 PHI-FDT cases matched to `hmi.M_720s` (per-case calibration
 applied, quiet-Sun threshold 50 G):
@@ -419,15 +448,49 @@ applied, quiet-Sun threshold 50 G):
   first polar reversal shifts by **1.26 yr** (3.72 vs 2.46 yr) from the
   added polar constraint.
 - **Calibration:** the PHI/HMI slope declines monotonically 0.75 → 0.50 over
-  eight days, tracking SolO–Sun distance nearly linearly (consistent with
-  resolution-dependent flux loss); a late-UT observing-program cluster sits
-  below that trend.
+  eight days, tracking SolO–Sun distance nearly linearly; a late-UT
+  observing-program cluster sits below that trend. The
+  resolution-degradation test (§7b) confirms this deficit is a plate-scale
+  effect.
 
 Two systematics were found and fixed during this study and are worth
 flagging for anyone building direct-geometry synoptic maps: HMI's ~180°
 `CROTA2` (ignoring it mirrors the map between hemispheres and flips the sign
 of g₁₀), and the absence of WCS metadata in raw JSOC SUMS segments (injected
 on download / `--fix-headers`).
+
+### 7b. The 2025 high-B₀ campaign (CR 2294–2297, Feb 14 – Apr 29)
+
+The decisive polar test, over four Carrington rotations during which Solar
+Orbiter's B₀ swept from −2° through −16.7° (late March) to a +16.8° northern
+plateau (late April), while Earth stayed near −7°. Analysed per rotation
+(`run_milestone_by_rotation.py`) with the merged product separation-guarded.
+
+- **Polar coverage (the robust, calibration-independent headline):** PHI
+  overtakes HMI on the ≥60° south cap in March (**64% vs 46%**) as SolO dives
+  south, and on the north cap in April (**51% vs 3%, ~16×**) as it crosses to
+  a northern view — the advantage switching on with |B₀| exactly as
+  hypothesised. [Figure: `plot_campaign_summary.py`.]
+- **SFT impact — only where Earth is blind:** injecting PHI's north-cap field
+  (`run_sft_polar_experiment.py`) at the April epoch where HMI is blind (3%
+  fill) shifts the first predicted polar reversal by **−1.68 yr**; the
+  co-observed south-cap constraint (HMI 46%) changes nothing (−0.004 yr).
+- **Central reframing:** PHI's polar advantage is largest exactly when the
+  SolO–Earth separation is largest (80–172° in April), so at the decisive
+  epochs a per-pixel merge is invalid — PHI is a *standalone polar
+  constraint*, not a merge partner. The two vantages are complementary in
+  time, not space.
+- **Robustness:** the calibration slope deficit is **resolution** — smoothing
+  HMI to PHI's plate scale raises the mean slope 0.56 → ~1.0
+  (`calibration_resolution_test.py`); the coverage-advantage *magnitude*
+  depends on the limb cut (~16× at `MU_MIN = 0.4` vs ~2.6× at 0.25, sign
+  robust); α is sub-dominant (PHI dipole varies ~3% over α = 0.6–1.0).
+- **Caveat:** at the high-separation epochs there is no common support and no
+  valid calibration, so the per-rotation *absolute* g₁₀ is provisional; the
+  coverage and the SFT reversal-timing differential are the robust results.
+
+Full prose and figures: [`docs/manuscript.md`](docs/manuscript.md),
+[`docs/results_brief.html`](docs/results_brief.html).
 
 ---
 
@@ -436,14 +499,15 @@ on download / `--fix-headers`).
 - `Br ≈ Blos / mu^alpha` is only an approximation; the cross-vantage
   disagreement concentrates in active-region bins where it fails (hence the
   quiet-Sun diagnostic). No full vector inversion is used.
-- Coverage: eight days ≈ 105° of longitude drift per vantage; full-CR
-  coverage awaits denser PHI synoptic programs.
+- Coverage: per-rotation windows have partial longitude coverage, which
+  dominates the uncertainty on *absolute* per-rotation g₁₀ (§7b); denser PHI
+  synoptic programs would close this.
 - Fill-mode dependence is the largest single uncertainty on *absolute* g₁₀;
   differential (product-vs-product) statements are robust against it.
-- The calibration-distance correlation is consistent-with but not yet
-  confirmed (the degrade-HMI-to-PHI-resolution test is planned).
-- The SFT model is 1D (axisymmetric); longitude-dependent assimilation is
-  future work.
+- The polar-advantage *magnitude* depends on the limb cut `MU_MIN` (§7b);
+  the *sign* is robust.
+- The SFT model is 1D (axisymmetric); longitude-dependent and time-dependent
+  assimilation of PHI (beyond a single initial condition) is future work.
 
 ---
 
@@ -458,14 +522,20 @@ Done and validated on real data:
 - ~~SFT model port and map-driven experiment~~ (§6e)
 - ~~full-Carrington-rotation run + diagnostics~~ (§6d, §7)
 - ~~reference comparison, reversal timing, paper outline~~ (§6d–e, `docs/`)
+- ~~per-rotation campaign tooling + separation guard~~ (§6c)
+- ~~2025 high-B₀ campaign — the decisive polar test~~ (§7b)
+- ~~degrade-HMI resolution test — deficit confirmed as plate-scale~~ (§7b)
+- ~~standalone polar-constraint SFT experiment~~ (§6e)
+- ~~written manuscript draft + shareable results page~~ (`docs/`)
 
-Remaining, data-gated rather than code-gated:
+Remaining (future work, not code-gated):
 
-- **Degrade-HMI resolution test** — confirm the calibration-distance
-  correlation.
-- **2025 high-B₀ window** — the decisive polar test, where Solar Orbiter's
-  ~17° inclination makes the pole itself visible (see the "Next campaign"
-  section of `docs/RESEARCH_PLAN.md`).
+- **Denser PHI synoptic coverage** to reduce the per-rotation
+  longitude-sampling uncertainty on absolute g₁₀.
+- **2-D / time-dependent assimilation** of PHI into the SFT, beyond a single
+  initial condition.
+- **Vector inversions** to remove the `Br ≈ Blos/mu^alpha` active-region
+  error class.
 
 ---
 
