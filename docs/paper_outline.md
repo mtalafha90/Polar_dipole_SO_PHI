@@ -147,16 +147,21 @@ April), while Earth's B0 stays at -5 to -7 deg. The polar-cap fill
 | CR 2294 | Feb 14 - Mar 1 | -2 -> -8 | 15-21 deg | 5 / 0 | 30 / 38 |
 | CR 2295 | Mar 2 - Mar 28 | -8 -> -17 | 0.3-60 deg | 0 / 0 | **64 / 46** |
 | CR 2296 | Mar 31 - Apr 24 | -8 -> +17 | 80-165 deg | **51 / 3** | 12 / 41 |
-| CR 2297 | Apr 26 - Apr 29 | +16.8 (apex) | 168-172 deg | **37 / 2** | 0 / 13 |
+| CR 2297 | Apr 26 - May 21 | +14 -> +17 | 168-180 deg | **77 / 12** | 0 / 34 |
 
 - Coverage (calibration-independent, the robust headline): PHI overtakes
   HMI on the south cap in March (64% vs 46%) as SolO dives south, and on
   the north cap in April (51% vs 3%, a 16x advantage) as SolO crosses to a
-  northern view; the north advantage persists into the final rotation
-  (37% vs 2%) with SolO at its +16.8 deg apex. In the near-ecliptic first
-  rotation PHI has no advantage (HMI's south cap is marginally better). The
-  advantage switches on with |B0| exactly as hypothesised. [Figure:
-  campaign_polar_advantage.png, from `plot_campaign_summary.py`.]
+  northern view; the advantage STRENGTHENS across the full CR 2297 rotation
+  (77% vs 12% on 203 cases) as SolO holds the +14-17 deg apex in near-perfect
+  opposition (sep 168-180 deg, zero co-observed pixels all month). In the
+  near-ecliptic first rotation PHI has no advantage (HMI's south cap is
+  marginally better). The advantage switches on with |B0| exactly as
+  hypothesised. [Figure: campaign_polar_advantage.png.]
+- Polarity (CR 2297): with 77% north-cap coverage PHI measures
+  g10_north = -0.25 G, the SIGN of the reference chart (-0.39 G) and the
+  cycle-25 north reversal; HMI's 12% grazing-angle extrapolation gives +0.19
+  (wrong sign) -- the coverage advantage as a corrected polar-field polarity.
 - Vantage effect on the dipole: on common support in CR 2295 the two
   vantages disagree on the SIGN of the south-polar g10 contribution
   (project mode: PHI +0.21 vs HMI -0.10 G on the same bins). HMI's
