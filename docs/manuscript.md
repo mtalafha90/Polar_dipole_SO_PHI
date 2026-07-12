@@ -151,10 +151,11 @@ advantage.
 
 ### 4.2 The 2025 high-B₀ campaign: coverage
 
-Over 2025-02-14 to 04-29 (CR 2294–2297) Solar Orbiter's B₀ swept from
-near-ecliptic (−2°) to a deep southern view (−16.7°, late March) and on to
-a northern plateau (+16.8°, late April), while Earth's B₀ stayed at −5 to
-−7°. The ≥60° polar-cap fill (per cent) tracks this directly:
+Over 2025-02-14 to 07-16 (CR 2294–2299) Solar Orbiter's B₀ swept from
+near-ecliptic (−2°) to a deep southern view (−16.7°, late March), up to a
+northern plateau (+16.8°, late April–May), and back down toward the
+ecliptic through June–July, while Earth's B₀ rose from −7° toward −2°
+(northern summer). The ≥60° polar-cap fill (per cent) tracks this directly:
 
 | rotation | dates | SolO B₀ | separation | N-cap PHI/HMI | S-cap PHI/HMI |
 |---|---|---|---|---|---|
@@ -162,20 +163,33 @@ a northern plateau (+16.8°, late April), while Earth's B₀ stayed at −5 to
 | CR 2295 | Mar 2 – Mar 28 | −8 → −17° | 0.3–60° | 0 / 0 | **64 / 46** |
 | CR 2296 | Mar 31 – Apr 24 | −8 → +17° | 80–165° | **51 / 3** | 12 / 41 |
 | CR 2297 | Apr 26 – May 21 | +14 → +17° | 168–180° | **77 / 12** | 0 / 34 |
+| CR 2298 | May 23 – Jun 19 | +14 → +6°† | ~155–179°† | 64 / 23 | 0 / 24 |
+| CR 2299 | Jun 20 – Jul 16 | +6 → 0°† | ~90–160°† | 45 / 34 | 4 / 13 |
 
-The pattern is unambiguous and matches the hypothesis. Near the ecliptic
-(CR 2294) PHI has no advantage — HMI's southern cap is even marginally
-better. As SolO dives south (CR 2295) PHI's south-cap coverage overtakes
-HMI (64% vs 46%). As SolO crosses to a northern view (CR 2296–2297) PHI
-dominates the north cap, and the advantage *strengthens* as SolO holds the
-+14–17° apex across the full CR 2297 rotation: north-cap fill rises to
-**77% vs HMI's 12%** on 203 co-registered cases, with SolO in near-perfect
+†CR 2298–2299 SolO-B₀ and separation ranges are approximate pending the
+per-rotation calibration tables; the coverage fractions are exact.
+
+The pattern is unambiguous and matches the hypothesis, and — with the
+extended window — traces a full rise *and fall*. Near the ecliptic
+(CR 2294) PHI has no advantage. As SolO dives south (CR 2295) PHI's
+south-cap coverage overtakes HMI (64% vs 46%). As SolO crosses to a
+northern view PHI dominates the north cap, strengthening to **77% vs 12%**
+across the full CR 2297 rotation at the +14–17° apex, in near-perfect
 opposition (separation 168–180°, zero co-observed pixels all month) — the
-purest standalone-constraint configuration in the campaign. Meanwhile,
-northward-tilted, PHI loses the south. Because this result is coverage —
-counts of observed bins — it is independent of calibration and of the
-polar-fill assumption; it is the campaign's most robust finding. [Figure:
-`campaign_polar_advantage.png`, from `plot_campaign_summary.py`.]
+purest standalone-constraint configuration in the campaign. As SolO then
+descends from the apex (CR 2298–2299) the advantage switches *off*
+symmetrically: PHI's north-cap fill falls 77 → 64 → 45% while HMI's climbs
+12 → 23 → 34% (Earth's B₀ rising toward zero into northern summer), until at
+CR 2299 the gap has nearly closed. The advantage is thus governed by the
+*difference* in the two heliolatitudes, switching on and off with it.
+Notably, the merged product stays empty throughout CR 2296–2299: SolO
+remains on the far side of the Sun even as the coverage advantage fades, so
+the merge geometry never recovers within the window — the coverage
+(B₀-driven) and merge-validity (separation-driven) effects decouple.
+Because this result is coverage — counts of observed bins — it is
+independent of calibration and of the polar-fill assumption; it is the
+campaign's most robust finding. [Figure: `campaign_polar_advantage.png`,
+from `plot_campaign_summary.py`.]
 
 The table uses the conservative limb cut µ_min = 0.4 (only pixels within
 ~66° of disk centre). The *sign* of the advantage is robust, but its
@@ -257,19 +271,25 @@ resulting g₁₀(t) with the −1.68 yr reversal shift.]
 ### 4.5 Reference validation and its limit
 
 Checked per rotation against `hmi.synoptic_mr_polfil_720s`
-(`compare_reference_by_rotation.py`), the standard chart's dipole is small
-and negative and grows more negative through the window (g₁₀,ref = −0.21,
-−0.17, −0.18, −0.39 G for CR 2294–2297), consistent with the cycle-25 polar
-field rebuilding near maximum. The partial-coverage milestone products do
-*not* reproduce this near-zero signal in sign (project mode: all positive,
-+0.3 to +1.0 G; the HMI-view product is nearest the reference but still off
-by ~0.5 G — and since the reference is itself an HMI product, proximity to
-it favours the HMI-view map by construction). Unlike the dense 8-day
-CR 2264 window, a near-zero true dipole sampled from partial per-rotation
-longitude coverage is swamped by sampling. We therefore treat the 2025
-*absolute* g₁₀ magnitudes as provisional; the robust campaign results are
-the polar coverage (§4.2) and the SFT reversal-timing differential (§4.4),
-both independent of calibration and polar-fill mode.
+(`compare_reference_by_rotation.py`), the standard chart's dipole grows
+steadily more negative through the window — g₁₀,ref = −0.21, −0.17, −0.18,
+−0.39, −0.57, −0.52 G for CR 2294–2299 — the cycle-25 axial dipole
+rebuilding (negative) after the polar reversal. Early in the window, where
+the true dipole is near zero (−0.2 G), the partial-coverage products do not
+reproduce it in sign (all positive, +0.3 to +1.0 G; the HMI-view product is
+nearest, but the reference is itself an HMI product so that proximity is by
+construction), and a near-zero dipole sampled from partial per-rotation
+longitude coverage is swamped by sampling — so the 2025 *absolute* g₁₀
+magnitudes are provisional. As the true dipole strengthens, however, the
+products lock onto it: by CR 2299 both PHI (−0.19 G) and HMI (−0.03 G) are
+negative, matching the reference sign, and **PHI is now closer to the
+reference than HMI** (Δ = +0.37 vs +0.49 G) — the opposite of the early
+ordering. Once the north polar field is strong and negative, the vantage
+that actually sees it (PHI) recovers more of it than the Earth-view
+extrapolation, corroborating the CR 2297 polarity result (§4.3) from a
+second, independent direction. The robust campaign results remain the polar
+coverage (§4.2) and the SFT reversal-timing differential (§4.4), both
+independent of calibration and polar-fill mode.
 
 ## 5. Discussion
 
@@ -302,9 +322,13 @@ refusing to construct a blended product from two disjoint hemispheres.
    up to 16× (north cap 51% vs 3%), and the advantage switches on with
    SolO's heliolatitude exactly as hypothesised — south cap in March, north
    cap in April — strengthening to 77% vs 12% across the full CR 2297
-   rotation at the northern apex. With that coverage PHI recovers the
-   negative sign of the reversing cycle-25 north polar field (matching the
-   community-standard chart), which the Earth-view extrapolation gets wrong.
+   rotation at the northern apex, then switching off symmetrically
+   (77 → 64 → 45% vs 12 → 23 → 34%) as SolO descends and Earth's B₀ rises:
+   the advantage is governed by the difference of the two heliolatitudes.
+   With apex coverage PHI recovers the negative sign of the reversing
+   cycle-25 north polar field (matching the community-standard chart),
+   which the Earth-view extrapolation gets wrong; by CR 2299 PHI's total
+   dipole is also closer to the reference chart than HMI's.
 3. PHI's polar advantage is largest where the SolO–Earth separation is
    largest, so at the decisive epochs the value of the polar view is as a
    standalone polar constraint, not a co-registered merge partner. The two

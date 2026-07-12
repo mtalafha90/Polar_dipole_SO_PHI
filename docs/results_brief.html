@@ -146,12 +146,12 @@
   <header class="hero">
     <span class="eyebrow"><span class="dot"></span>Solar Orbiter/PHI <span class="muted">×</span> <span class="dot amb"></span>SDO/HMI</span>
     <h1>The polar view matters exactly where Earth is blind</h1>
-    <p class="lead muted">A four-rotation campaign (Feb–Apr 2025) testing whether Solar Orbiter's out-of-ecliptic magnetograph improves surface-flux-transport estimates of the Sun's axial dipole moment g₁₀ — the strongest precursor of the next cycle.</p>
+    <p class="lead muted">A six-rotation campaign (Feb–Jul 2025) testing whether Solar Orbiter's out-of-ecliptic magnetograph improves surface-flux-transport estimates of the Sun's axial dipole moment g₁₀ — the strongest precursor of the next cycle.</p>
     <div class="metaline">
-      <span class="chip">Window · 2025-02-14 → 04-29</span>
-      <span class="chip">CR 2294–2297</span>
-      <span class="chip">SolO B₀ · −2° → −16.7° → +16.8°</span>
-      <span class="chip">Earth B₀ · ≈ −7°</span>
+      <span class="chip">Window · 2025-02-14 → 07-16</span>
+      <span class="chip">CR 2294–2299</span>
+      <span class="chip">SolO B₀ · −2° → −16.7° → +16.8° → down</span>
+      <span class="chip">Earth B₀ · −7° → −2°</span>
     </div>
   </header>
 
@@ -160,7 +160,7 @@
     <div class="stats">
       <div class="stat">
         <span class="stat-num">16×</span>
-        <span class="stat-cap"><b>North-cap coverage gain.</b> PHI fills 51% of the ≥60° north cap in April vs HMI's 3%.</span>
+        <span class="stat-cap"><b>North-cap coverage gain.</b> PHI fills 51% of the ≥60° north cap in April vs HMI's 3%, peaking at 77% vs 12% over the full apex rotation.</span>
       </div>
       <div class="stat">
         <span class="stat-num">−1.68 yr</span>
@@ -176,8 +176,8 @@
 
   <section>
     <span class="eyebrow sec-eyebrow"><span class="dot"></span>Result 1 · Coverage</span>
-    <h2>PHI's polar advantage switches on with SolO's latitude</h2>
-    <p class="muted" style="font-size:15px">≥60° polar-cap fill fraction, PHI vs HMI, per Carrington rotation. Coverage is a count of observed bins — independent of calibration and of any polar-fill assumption, so this is the most robust result. As SolO dives to −17° it wins the <em>south</em> cap; as it climbs to +17° it wins the <em>north</em> by an order of magnitude.</p>
+    <h2>PHI's polar advantage switches on — and off — with SolO's latitude</h2>
+    <p class="muted" style="font-size:15px">≥60° polar-cap fill fraction, PHI vs HMI, per Carrington rotation. Coverage is a count of observed bins — independent of calibration and of any polar-fill assumption, so this is the most robust result. As SolO dives to −17° it wins the <em>south</em> cap; as it climbs to +17° it wins the <em>north</em> by an order of magnitude (peaking at 77% vs 12% across the full CR 2297 apex rotation); as it descends again the advantage fades symmetrically, with HMI recovering as Earth's own B₀ rises into northern summer.</p>
     <div class="legend">
       <span class="key"><span class="sw phi"></span>PHI (Solar Orbiter)</span>
       <span class="key"><span class="sw hmi"></span>HMI (SDO)</span>
@@ -249,6 +249,8 @@
     {cr:"CR 2295", meta:"Mar 2–Mar 28 · B₀ −8→−17° · sep 0.3–60°", n:[0,0], s:[64,46], win:"s"},
     {cr:"CR 2296", meta:"Mar 31–Apr 24 · B₀ −8→+17° · sep 80–165°", n:[51,3], s:[12,41], win:"n"},
     {cr:"CR 2297", meta:"Apr 26–May 21 · B₀ +14→+17° · sep 168–180°", n:[77,12], s:[0,34], win:"n"},
+    {cr:"CR 2298", meta:"May 23–Jun 19 · B₀ descending · far side", n:[64,23], s:[0,24], win:"n"},
+    {cr:"CR 2299", meta:"Jun 20–Jul 16 · B₀ descending · far side", n:[45,34], s:[4,13], win:null},
   ];
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
