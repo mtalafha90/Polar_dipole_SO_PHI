@@ -10,7 +10,10 @@ and SFT predictions compared with Earth-view (HMI) data alone.
 Documentation: the research plan and code map are in
 [`docs/RESEARCH_PLAN.md`](docs/RESEARCH_PLAN.md), the condensed results
 ledger in [`docs/paper_outline.md`](docs/paper_outline.md), the full
-written draft in [`docs/manuscript.md`](docs/manuscript.md), a
+written draft in [`docs/manuscript.md`](docs/manuscript.md), the
+*Astronomy & Astrophysics*-formatted manuscript in
+[`paper.tex`](paper.tex) (requires the journal's `aa.cls`/`aa.bst`, not
+redistributed here; references in [`references.bib`](references.bib)), a
 self-contained shareable results page in
 [`docs/results_brief.html`](docs/results_brief.html), and a
 clean-run reproduction runbook in
