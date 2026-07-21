@@ -1,0 +1,581 @@
+\documentclass[namedreferences,hyperref,optionalrh]{spr-sola}
+\usepackage{graphicx}        % For eps figures, newer & more powerfull
+%\usepackage{amssymb}        % useful mathematical symbols
+\usepackage{color}           % For color text: \color command
+%\usepackage{breakurl}                         % For breaking URLs easily trough lines in DVI mode
+\def\UrlFont{\rm}                        % define the fonts for the URLs
+
+% General definitions
+% please place your own definitions here and don't use \def but
+% \newcommand{}{} or 
+% \renewcommand{}{} if it is already defined in LaTeX
+
+\newcommand{\BibTeX}{\textsc{Bib}\TeX}
+\newcommand{\etal}{et al.}
+
+% Definitions for equations
+\renewcommand{\vec}[1]{{\mathbfit #1}}
+\newcommand{\deriv}[2]{\frac{{\mathrm d} #1}{{\mathrm d} #2}}
+\newcommand{\rmd}{{\ \mathrm d}}
+\newcommand{\uvec}[1]{\hat{\mathbf #1}}
+\newcommand{\pder}[2]{\f{\partial #1}{\partial #2}}
+\newcommand{\grad}{{\bf \nabla}}
+\newcommand{\curl}{{\bf \nabla}\times}
+\newcommand{\vol}{{\mathcal V}}
+\newcommand{\bndry}{{\mathcal S}}
+\newcommand{\dv}{~{\mathrm d}^3 x}
+\newcommand{\da}{~{\mathrm d}^2 x}
+\newcommand{\dl}{~{\mathrm d} l}
+\newcommand{\dt}{~{\mathrm d}t}
+\newcommand{\intv}{\int_{\vol}^{}}
+\newcommand{\inta}{\int_{\bndry}^{}}
+\newcommand{\avec}{\vec A}
+\newcommand{\ap}{\vec A_p}
+
+\newcommand{\bb}{\vec B}
+\newcommand{\jj}{\vec j}
+\newcommand{\rr}{\vec r}
+\newcommand{\xx}{\vec x}
+
+% Definitions for the journal names
+\newcommand{\adv}{{\it Adv. Space Res.}} 
+\newcommand{\annG}{{\it Ann. Geophys.}} 
+\newcommand{\aap}{{\it Astron. Astrophys.}}
+\newcommand{\aaps}{{\it Astron. Astrophys. Suppl.}}
+\newcommand{\aapr}{{\it Astron. Astrophys. Rev.}}
+\newcommand{\ag}{{\it Ann. Geophys.}}
+\newcommand{\aj}{{\it Astron. J.}} 
+\newcommand{\apj}{{\it Astrophys. J.}}
+\newcommand{\apjl}{{\it Astrophys. J. Lett.}}
+\newcommand{\apss}{{\it Astrophys. Space Sci.}} 
+\newcommand{\cjaa}{{\it Chin. J. Astron. Astrophys.}} 
+\newcommand{\gafd}{{\it Geophys. Astrophys. Fluid Dyn.}}
+\newcommand{\grl}{{\it Geophys. Res. Lett.}}
+\newcommand{\ijga}{{\it Int. J. Geomagn. Aeron.}}
+\newcommand{\jastp}{{\it J. Atmos. Sol.-Terr. Phys.}}
+\newcommand{\jgr}{{\it J. Geophys. Res.}}
+\newcommand{\mnras}{{\it Mon. Not. R. Astron. Soc.}}
+\newcommand{\nat}{{\it Nature}}
+\newcommand{\pasp}{{\it Publ. Astron. Soc. Pac.}}
+\newcommand{\pasj}{{\it Publ. Astron. Soc. Japan}}
+\newcommand{\pre}{{\it Phys. Rev. E}}
+\newcommand{\solphys}{{\it Sol. Phys.}}
+\newcommand{\sovast}{{\it Soviet  Astron.}} 
+\newcommand{\ssr}{{\it Space Sci. Rev.}} 
+\chardef\us=`\_
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\begin{frontmatter}
+\title{Impact of Solar Orbiter Polar-View Magnetic Constraints on Surface Flux Transport Estimates of the Sun’s Axial Dipole Moment}
+
+\author[addressref={aff1,aff2},email={mtalafha901@gmail.com}]{\inits{M.H.}\fnm{Mohammed H.}~\snm{Talafha}\orcid{123-456-7890}}
+%\author[addressref=aff1,email={mtalafha901@gmail.com}]%{\inits{F.}\fnm{First~Names}~\snm{Surname~Author-b}}
+%\author[addressref=aff2,corref,email={e-mail.c@mail.com}]{\inits{F.}\fnm{First~Names}~\snm{Surname~Author-c}\orcid{987-654-3210}}
+%\author[addressref=aff3]{\inits{T.}\fnm{First~Names}~\snm{Surname~Author-d}}
+%\author{\inits{}\fnm{}~\lnm{}\orcid{}}
+%   NOTE:  Just one corresponding author [corref]
+\address[id=aff1]{Research Institute of Sciences and Engineering, University of Sharjah, Sharjah, UAE}
+\address[id=aff2]{HUN-REN WIGNER Research Centre for Physics, Budapest, Hungary}
+%\address[id=aff3]{Third affiliation and address}
+
+\runningauthor{Talafha et al.}
+\runningtitle{\textit{Solar Physics} Example Article}
+
+\begin{abstract}
+The Sun’s axial dipole moment is a key large-scale magnetic quantity for studies of polar-field evolution and solar-cycle prediction, but its inference from line-of-sight (LOS) magnetograms is limited by viewing geometry and by the treatment of near-limb pixels. We develop and test a framework for combining LOS magnetograms from the Polarimetric and Helioseismic Imager (PHI) aboard \textit{Solar Orbiter} with contemporaneous LOS magnetograms from the Helioseismic and Magnetic Imager (HMI) aboard the \textit{Solar Dynamics Observatory}. In this approach, HMI magnetograms are reprojected onto the PHI grid, the two datasets are combined through a smooth radial blending scheme, and an approximate radial field is inferred using a generalised $B_{r}\approx B_{\mathrm{los}}/\mu^{\alpha}$ correction with an imposed lower threshold in $\mu=\cos\theta$. Sensitivity tests on a validation subset from 27--28 October 2022 show that the inferred dipole is much more sensitive to the limb threshold $\mu_{\min}$ than to the exponent $\alpha$, and motivate a conservative baseline prescription with $R_{\mathrm{inner}}=0.70$, $R_{\mathrm{outer}}=0.90$, $\mu_{\min}=0.40$, and $\alpha=0.8$. For the validation subset, the merged dipole estimates lie between the PHI-only and HMI-only values and are less variable than the HMI-only series. We then apply the same framework to a polar-view interval from 11 February to 29 April 2025, processing 173 matched PHI--HMI cases. Over this interval, the mean PHI-only, HMI-only, and merged dipole proxies are $-0.0789$, $-0.0711$, and $-0.1035$, respectively, but all three series exhibit large temporal variability, with standard deviations of $0.7017$, $0.7895$, and $0.7310$. Representative cases show that the merged dipole can follow, moderate, or even exceed the single-instrument estimates depending on the spatial weighting of magnetically important structures within the blended map. These results demonstrate that multi-view magnetic constraints from \textit{Solar Orbiter}/PHI can modify the inferred large-scale dipole in a nontrivial and time-dependent way, while also showing that the principal remaining uncertainty lies in the LOS-to-radial conversion rather than in the reprojection or blending framework itself.
+\end{abstract}
+\keywords{Solar Orbiter; SO/PHI; SDO/HMI; solar magnetism; axial dipole moment; surface flux transport; solar cycle prediction; polar fields}
+\end{frontmatter}
+%-------------------------------------------------
+
+\section{Introduction}
+\label{sec:Introduction} 
+why the Sun’s axial dipole matters
+why single-view magnetograms are limited
+why Solar Orbiter / PHI polar-view constraints may help
+what this paper does
+\section{Data}
+
+The data used in this study consist of line-of-sight (LoS) full-disk magnetic field maps from the Full Disc Telescope (FDT) of the Polarimetric and Helioseismic Imager aboard \textit{Solar Orbiter} (SO/PHI-FDT) and contemporaneous LoS magnetograms from the Helioseismic and Magnetic Imager (HMI) aboard the \textit{Solar Dynamics Observatory} (SDO).
+
+In the present work, two observational windows are considered. The first is a compact validation subset covering 27--28 October 2022, used to test the reprojection, blending, and dipole-estimation pipeline under controlled conditions. The second is a longer polar-view application interval spanning 11 February 2025 to 1 April 2025, chosen to sample SO/PHI-FDT observations obtained during the higher-latitude phase of the \textit{Solar Orbiter} mission. For this latter interval, 173 matched PHI--HMI cases were processed successfully with the adopted baseline method. The resulting mean dipole proxies are close to zero, but the series display substantial temporal variability, with standard deviations of 0.7017, 0.7895, and 0.7310 for the PHI-only, HMI-only, and merged series, respectively. 
+
+The 2025 interval is particularly relevant because \textit{Solar Orbiter} had entered the phase of the mission in which elevated-latitude and polar-view observations become scientifically important. In addition, the currently used SO/PHI-FDT datasets belong to the fourth FDT data release, which includes Level-2, version-3 products for 2024--2025 and, for the first time, provides the full set of FDT magnetic observables, including \texttt{blos}, \texttt{bmag}, \texttt{binc}, \texttt{bazi}, \texttt{icnt}, and \texttt{vlos}. 
+\subsection{SO/PHI-FDT magnetic field}
+
+For the \textit{Solar Orbiter} component, we use Level-2 full-disk telescope line-of-sight magnetic field maps from SO/PHI-FDT, identified by the observable name \texttt{blos}. According to the FDT release documentation, the line-of-sight magnetic field product is computed from the magnetic field magnitude and inclination provided by the RTE inversion pipeline. The same release also includes continuum intensity, full Stokes data, line-of-sight velocity, and the full vector magnetic field, but only the \texttt{blos} product is used in the present analysis. :contentReference[oaicite:3]{index=3}
+
+SO/PHI data are produced through a combination of on-board and on-ground processing. The instrument acquires filtergrams with the focal plane assembly and processes them through pre-processing and radiative-transfer inversion stages before downlink, while the final calibration to physical units and the assembly of FITS metadata are completed on the ground. The SO/PHI data-product documentation emphasizes that the on-ground and in-flight processing chains are designed to remain as coherent as possible, with the final calibration always completed on the ground. 
+
+The 2025 FDT data release also notes several instrumental and calibration considerations relevant for scientific interpretation. In particular, datasets acquired since 22 February 2025 are generally on-board averages of three individual measurements, introduced in order to improve the signal-to-noise ratio, although exceptions exist and the actual number of averaged measurements can vary from file to file. The same release warns that residual artifacts may remain in some products owing to telemetry constraints, focus changes, imperfect flat-field correction, residual ghost and fringe signatures, and a dust grain imprint that is especially visible in continuum intensity data. These caveats are important to bear in mind when interpreting subtle spatial differences between SO/PHI and HMI maps, especially in the weak-signal regime or in data taken close to perihelion. 
+
+The SO/PHI-FDT LoS maps used here are not compared directly in heliographic coordinates at the data-selection stage. Instead, each PHI magnetogram is treated as the reference observation for a matched PHI--HMI pair, and the nearest HMI LoS magnetogram is later reprojected onto the PHI image grid. This preserves the \textit{Solar Orbiter} viewing geometry throughout the subsequent analysis and allows the effect of elevated-latitude PHI constraints on the inferred large-scale dipole to be tested directly.
+
+\subsection{HMI magnetic field}
+
+For the Earth-view reference, we use LoS magnetograms from the HMI \texttt{hmi.M\_720s} data series. HMI observes the same Fe\,\textsc{i} 6173\,\AA\ line as SO/PHI, although with different spectral sampling and instrument-specific processing. 
+
+In the present work, the HMI \texttt{M\_720s} product is adopted because it provides full-disk LoS magnetic field measurements at a standard cadence suitable for matching to the available SO/PHI-FDT observations. For each PHI observation, the nearest HMI magnetogram in time is identified and retained only if the temporal offset remains below the imposed threshold. In the 2025 polar-view application interval, the temporal matching is generally good, with many cases having offsets of order 189~s and a subset reaching much smaller offsets of only a few seconds. The campaign nevertheless contains a small number of rejected cases where no suitable HMI match was available within the allowed time window. 
+
+Unlike the SO/PHI data, the HMI magnetograms are not analysed in their native image plane. Instead, they are reprojected onto the PHI detector grid before any direct comparison, blending, or dipole estimation is performed. This follows the general philosophy also used in the paper you shared, where HMI data were reprojected to the SO/PHI frame before pixel-to-pixel comparison. In our case, however, the goal is not only inter-instrument comparison but also the construction of a smoothly blended multi-view magnetic map that can be used for approximate dipole inference. :contentReference[oaicite:8]{index=8}
+
+Overall, the SO/PHI-FDT and HMI datasets used here are complementary. SO/PHI provides the non-Earth-view component of the analysis and is the only magnetograph on a deep-space mission, whereas HMI provides a continuous, stable, Earth-view reference magnetogram sequence. Their combined use allows us to test whether multi-view magnetic constraints, particularly during the polar-view phase of \textit{Solar Orbiter}, materially modify or stabilise the inferred large-scale axial dipole moment.
+\begin{table*}
+\caption{Observation details of the SO/PHI-FDT and SDO/HMI data used in this work.}
+\label{tab:obs_details}
+\centering
+\begin{tabular}{l c c}
+\hline\hline
+Property & Validation subset & Polar-view \\
+\hline
+SO/PHI instrument & FDT & FDT \\
+SO/PHI product & Level-2 \texttt{blos} & Level-2 \texttt{blos} \\
+Start time & 2022-10-27 & 2025-02-11 \\
+End time & 2022-10-28 & 2025-04-01 \\
+PHI--HMI matching & nearest in time & nearest in time \\
+Maximum allowed time offset & 600 s & 600 s \\
+Number of matched PHI--HMI cases & 8 & 173 \\
+Mean $D_{\mathrm{PHI}}$ & $-0.118$ & $-0.0789$ \\
+Mean $D_{\mathrm{HMI}}$ & $-0.316$ & $-0.0711$ \\
+Mean $D_{\mathrm{merge}}$ & $-0.229$ & $-0.1035$ \\
+\hline
+\end{tabular}
+\end{table*}
+\section{Methodology}
+\label{sec:method}
+
+Our analysis is designed to assess whether line-of-sight (LoS) magnetic constraints from \textit{Solar Orbiter}/PHI modify or stabilise the inferred solar axial dipole moment relative to estimates based only on Earth-view HMI observations. The methodology consists of five main steps: construction of matched PHI--HMI pairs, reprojection of HMI onto the PHI image grid, smooth merging of the two LoS magnetograms, approximate conversion from LoS to radial field, and derivation of a Carrington-style dipole proxy from the resulting field distribution. A concise version of this workflow is given in the baseline pipeline description already prepared for the manuscript. :contentReference[oaicite:0]{index=0}
+
+%\subsection{Time matching and construction of PHI--HMI pairs}
+
+For each PHI full-disk LoS magnetogram, the nearest available HMI LoS magnetogram in time was identified. The matching was performed by comparing the observation timestamps recorded in the FITS headers of the two datasets. Only pairs with temporal separation below a prescribed threshold were retained, in order to minimise the impact of intrinsic solar evolution between the two observations. In the baseline implementation, the maximum allowed time difference was set to 600~s.
+
+The PHI observation was taken as the reference member of each pair. This choice is important for two reasons. First, the present work is specifically concerned with the impact of the non-Earth-view PHI contribution, so it is natural to retain the PHI geometry as the reference frame. Second, all later processing steps, including reprojection, merging, and approximate dipole estimation, are then performed in a consistent image geometry tied to the \textit{Solar Orbiter} viewpoint. The matched PHI--HMI pairs therefore constitute the fundamental data units of the analysis.
+
+%\subsection{Adoption of the PHI grid as the common reference frame}
+
+The PHI image plane was adopted as the common grid for all direct intercomparisons and merged-map products. In practice, this means that HMI was never compared in its native detector geometry. Instead, for each matched pair, the HMI LoS magnetogram was transformed into the PHI image frame using the helioprojective coordinate information stored in the map metadata.
+
+This choice preserves the \textit{Solar Orbiter} viewing geometry and allows the effect of the PHI contribution to be assessed directly. It also ensures that all derived products --- PHI-only, HMI-on-PHI, and merged maps --- are expressed on the same pixel grid, so that any differences between them arise from the magnetic data and the adopted blending prescription rather than from mismatched image sampling.
+
+%\subsection{Reprojection of HMI onto the PHI grid}
+
+The matched HMI magnetogram was reprojected onto the PHI grid using the World Coordinate System (WCS) information contained in the FITS headers. Both PHI and HMI provide helioprojective coordinate metadata, including the image scale, solar-disk location, observer geometry, and reference pixel definitions. This permits a direct geometrical transformation from the HMI image plane into the PHI frame.
+
+In the implementation used here, interpolation-based reprojection was performed with the PHI WCS as the target coordinate system and the PHI image shape as the output sampling grid. The reprojection yields two outputs: the HMI magnetic field resampled onto the PHI pixels, and a footprint array indicating where the transformation is well defined. The footprint is useful for diagnosing whether the reprojected HMI map covers the full PHI disk or only a restricted subset of it.
+
+The quality of the reprojection was evaluated in two complementary ways. First, we carried out direct visual inspection of the PHI and reprojected HMI maps, focusing on the spatial registration of the dominant magnetic structures. Second, we computed pixelwise statistical comparisons on inner-disk masks in order to reduce the influence of the solar limb, where differences in viewing geometry and interpolation errors are most pronounced. This provided the first validation step of the pipeline before any merging or radial-field inference was introduced. The shorter methodological description already in the draft summarises this reprojection logic at a high level. :contentReference[oaicite:1]{index=1}
+
+%\subsection{Direct LoS comparison and masked-disk statistics}
+
+Before constructing merged products, we compared the PHI and reprojected HMI LoS maps directly. This step was intended to determine whether the two instruments recover the same large-scale magnetic morphology once expressed in a common coordinate frame.
+
+To reduce the influence of the outer disk, the comparison was performed on masked circular regions defined by a normalised radial coordinate
+\begin{equation}
+    r = \frac{\rho}{R_{\odot,\mathrm{app}}},
+\end{equation}
+where $\rho$ is the pixel distance from disk centre in the image plane and $R_{\odot,\mathrm{app}}$ is the apparent solar radius derived from the map metadata. Correlation coefficients and difference statistics were evaluated for representative masks such as $r<0.95$ and $r<0.90$. These masked-disk statistics were used as a diagnostic of reprojection quality and as a guide for later choices in the blending strategy.
+
+%\subsection{Smooth merging of PHI and HMI LoS magnetograms}
+
+After reprojection, the PHI and HMI LoS magnetograms were combined into a single merged magnetic map. Initially, a hard-boundary merging strategy was tested, in which one dataset was used inside a specified radius and the other outside it. Although simple, this approach proved highly sensitive to the precise location of the switching radius. Small changes in the hard boundary could intersect magnetically important regions and produce large, non-monotonic changes in the inferred dipole.
+
+To avoid this behaviour, we adopted a smooth radial blending scheme. Let $r$ denote the normalised distance from disk centre in units of the apparent solar radius. The merged LoS magnetic field is written as
+\begin{equation}
+    B_{\mathrm{merge}}(r)
+    =
+    w_{\mathrm{PHI}}(r)\,B_{\mathrm{PHI}}(r)
+    +
+    \left[1-w_{\mathrm{PHI}}(r)\right] B_{\mathrm{HMI}}(r),
+\end{equation}
+where $w_{\mathrm{PHI}}(r)$ is the PHI radial weight. In the adopted implementation, this weight is defined piecewise:
+\begin{equation}
+    w_{\mathrm{PHI}}(r)=
+    \begin{cases}
+        1, & r \le R_{\mathrm{inner}}, \\[4pt]
+        \frac{1}{2}\left[1+\cos\left(\pi \frac{r-R_{\mathrm{inner}}}{R_{\mathrm{outer}}-R_{\mathrm{inner}}}\right)\right],
+        & R_{\mathrm{inner}} < r < R_{\mathrm{outer}}, \\[6pt]
+        0, & r \ge R_{\mathrm{outer}}.
+    \end{cases}
+\end{equation}
+Thus PHI dominates in the central disk, HMI dominates in the outer disk, and the transition between them is continuous. In the baseline solution adopted later, the inner and outer transition radii are
+\begin{equation}
+    R_{\mathrm{inner}} = 0.70,\qquad R_{\mathrm{outer}} = 0.90.
+\end{equation}
+
+This prescription avoids discontinuities in the merged map and makes the dipole estimate less sensitive to the precise location of the transition zone. It also provides a physically interpretable compromise: the central disk is more strongly constrained by PHI in its native geometry, while the outer disk is supplemented by HMI in a way that broadens the effective magnetic coverage.
+
+%\subsection{Disk masks and usable-field definition}
+
+The smooth merging procedure was applied only over the usable solar disk. Pixels outside the solar limb were excluded, and an overall disk-fraction mask was imposed to avoid pathological behaviour at the very edge of the disk. In the baseline implementation, the outer usable disk was defined by a maximum fraction of the apparent solar radius, denoted \texttt{DISK\_FRACTION}. This mask acts independently of the later $\mu_{\min}$ threshold used for the radial-field inference and serves primarily as an image-domain safeguard.
+
+%\subsection{Approximate conversion from LoS to radial field}
+
+Because both the PHI and HMI datasets used in this work are LoS magnetograms, an additional conversion is required before constructing a dipole proxy that is intended to represent the large-scale radial field. As a first approximation, we assume
+\begin{equation}
+    B_r \approx \frac{B_{\mathrm{los}}}{\mu^\alpha},
+\end{equation}
+where
+\begin{equation}
+    \mu = \cos\theta
+\end{equation}
+is the centre-to-limb factor and $\theta$ is the heliocentric angle. This generalises the usual $B_r \approx B_{\mathrm{los}}/\mu$ approximation by introducing the exponent $\alpha$, which controls the strength of the centre-to-limb correction.
+
+For each PHI pixel, $\mu$ was calculated from the image-plane geometry. Let $(x,y)$ denote the helioprojective pixel coordinates relative to disk centre, expressed in angular units. The normalised radial coordinate is then
+\begin{equation}
+    r = \frac{\sqrt{x^2+y^2}}{R_{\odot,\mathrm{app}}},
+\end{equation}
+and, for visible-disk pixels,
+\begin{equation}
+    \mu = \sqrt{1-r^2}.
+\end{equation}
+Only pixels satisfying
+\begin{equation}
+    \mu \ge \mu_{\min}
+\end{equation}
+were retained in the radial-field inference. This cut is necessary because the division by powers of $\mu$ can otherwise produce unrealistically large amplitudes near the limb. The sensitivity of the final dipole to the parameters $\mu_{\min}$ and $\alpha$ was investigated explicitly in the baseline-study stage, as noted in the current draft methodology summary. :contentReference[oaicite:2]{index=2}
+
+%\subsection{Approximate heliographic coordinate assignment}
+
+Once the radial proxy field had been obtained, each valid pixel was assigned an approximate heliographic latitude and longitude. This step used the solar-disk geometry and observer-location metadata stored in the map headers, including the observer Carrington longitude and latitude. The visible-disk coordinates were transformed into an approximate orthographic heliographic representation.
+
+The goal of this step is not to construct a full synoptic map, but rather to place the visible-disk radial proxy samples into a regular latitude--longitude framework from which a large-scale dipole moment can be estimated. Because only the visible hemisphere is sampled at any one time, the resulting heliographic grid should be regarded as a Carrington-style binned representation of the available disk field, not as a complete Carrington map.
+
+%\subsection{Carrington-style binning}
+
+The valid radial-field samples were binned onto a regular heliographic grid with
+\begin{equation}
+    N_{\lambda} = 180,\qquad N_{\phi} = 360,
+\end{equation}
+corresponding to latitude and longitude bin numbers of one degree each in the baseline implementation. Within each bin, the radial-field values were averaged over all contributing pixels. Bins receiving no valid contributions were retained as empty.
+
+This gridding step allows direct comparison between PHI-only, HMI-on-PHI, and merged radial proxy maps in a common heliographic framework. It also provides the natural input for the latitude-weighted dipole estimator used below.
+
+%\subsection{Approximate axial dipole estimator}
+
+From the binned radial-field map, we computed an approximate axial dipole proxy by applying a latitude-weighted mean of the form
+\begin{equation}
+    D \propto
+    \frac{\sum B_r(\lambda,\phi)\,\sin\lambda\,\cos\lambda}
+         {\sum \cos\lambda},
+\end{equation}
+where $\lambda$ is heliographic latitude and $\phi$ is heliographic longitude. The factor $\cos\lambda$ accounts for the varying surface area of latitude bands on the sphere, while the factor $\sin\lambda$ extracts the dipolar contribution aligned with the solar rotation axis.
+
+This estimator was evaluated separately for
+\begin{enumerate}
+    \item the PHI-only radial proxy map,
+    \item the HMI radial proxy map after reprojection onto the PHI grid, and
+    \item the smoothly merged PHI--HMI radial proxy map.
+\end{enumerate}
+Comparing these three dipole proxies allows the effect of including the PHI contribution to be measured directly.
+
+%\subsection{Baseline configuration}
+
+The final baseline configuration adopted in this work follows from the sensitivity analysis and is
+\begin{equation}
+    R_{\mathrm{inner}} = 0.70,\qquad
+    R_{\mathrm{outer}} = 0.90,
+\end{equation}
+for the smooth radial blending, together with
+\begin{equation}
+    \mu_{\min}=0.40,\qquad
+    \alpha=0.8,
+\end{equation}
+for the LoS-to-radial conversion. These values were selected because they provide a conservative compromise between stability and correction strength. In particular, they suppress the strongest limb-driven instabilities encountered for smaller values of $\mu_{\min}$, while avoiding the more aggressive radial amplification associated with the standard $\alpha=1$ correction. The shorter version of this baseline statement is already present in the manuscript draft. :contentReference[oaicite:3]{index=3}
+
+%\subsection{Scope and limitations of the method}
+
+It is important to emphasise that the present method does not yet reconstruct the true global radial field of the Sun. The LoS-to-radial conversion is approximate, the heliographic mapping is restricted to the visible disk, and the resulting binned field is not a full synoptic map. Accordingly, the dipole values derived here should be interpreted as controlled comparative proxies rather than definitive physical measurements of the solar axial dipole moment.
+
+Within this limitation, however, the method provides a consistent framework for isolating three effects: the geometrical registration between PHI and HMI, the impact of smooth multi-view blending, and the sensitivity of the inferred large-scale dipole to the treatment of the outer disk. This makes it well-suited for the present first-stage investigation of how PHI polar-view information affects large-scale dipole inference.
+
+\subsection{Sensitivity Analysis and Baseline Method}
+\label{sec:sensitivity}
+
+Because the merged dipole estimate depends not only on the geometric reprojection but also on the details of the map-combination and LOS-to-radial conversion, we performed a series of sensitivity tests on the 27--28 October 2022 validation subset before fixing a baseline method. These tests were designed to identify which steps of the pipeline dominate the uncertainty and to determine a stable set of working parameters for the subsequent analysis.
+
+%\subsection{Hard-boundary versus smooth blending}
+
+The first set of tests examined how the inferred dipole depends on the way PHI and HMI magnetograms are merged. A simple hard-boundary prescription was initially considered, in which PHI was used inside a specified disk radius and HMI outside that radius. Although straightforward to implement, this approach led to non-monotonic changes in the inferred dipole as the merge radius was varied. In practice, small changes in the boundary position could move the dipole estimate substantially, because the sharp transition intersected magnetically important regions and introduced an artificial sensitivity to a narrow annulus of pixels.
+
+To reduce this behavior, we replaced the hard switch by a smooth cosine-weighted blend. When tested over a range of transition radii, the smooth blend yielded much more stable dipole estimates and removed the abrupt jumps seen in the hard-boundary case. This behavior motivated the use of smooth radial blending in the remainder of the analysis.
+
+%\subsection{Sensitivity to the limb threshold \texorpdfstring{$\mu_{\min}$}{mu_min}}
+
+The dominant source of uncertainty was found to be the treatment of near-limb pixels in the LOS-to-radial conversion. To quantify this, we repeated the dipole calculation for several values of the threshold $\mu_{\min}$, while keeping the smooth blending fixed. The tested values were $\mu_{\min}=0.20$, $0.30$, $0.40$, and $0.50$.
+
+The inferred dipole changed strongly across this range. Smaller values of $\mu_{\min}$ retained more near-limb pixels and therefore allowed stronger amplification through the division by powers of $\mu$, producing substantially larger dipole amplitudes in magnitude. Conversely, larger values of $\mu_{\min}$ removed more of the outer disk, reducing the dipole magnitude and, in the most restrictive cases, driving some of the PHI-only and merged estimates toward sign changes. This behavior demonstrates that the limb threshold is the principal control parameter in the present approximation and that the dipole estimate is highly sensitive to how aggressively near-limb pixels are suppressed.
+
+Among the tested values, $\mu_{\min}=0.40$ provided the most conservative compromise. It reduced the excessive limb sensitivity seen at smaller thresholds while still retaining a sufficient portion of the disk to preserve a stable and consistently signed dipole estimate across the validation subset. We therefore adopted $\mu_{\min}=0.40$ as the baseline threshold.
+
+%\subsection{Sensitivity to the radial-correction exponent \texorpdfstring{$\alpha$}{alpha}}
+
+After fixing $\mu_{\min}=0.40$, we tested the dependence of the dipole estimate on the exponent $\alpha$ in the radial correction
+\begin{equation}
+    B_r \approx \frac{B_{\mathrm{los}}}{\mu^\alpha}.
+\end{equation}
+The values $\alpha=0.7$, $0.8$, $0.9$, and $1.0$ were considered. In contrast to the strong sensitivity observed for $\mu_{\min}$, the dependence on $\alpha$ was comparatively smooth and monotonic. Increasing $\alpha$ systematically increased the magnitude of the inferred dipole for PHI, HMI, and the merged maps, as expected from the stronger radial correction. However, these changes were gradual and did not introduce the strong instability or sign reversals associated with changing $\mu_{\min}$.
+
+This behaviour indicates that, once the limb treatment is fixed, the exponent $\alpha$ acts primarily as a secondary tuning parameter that modulates the overall strength of the radial correction. In order to avoid the more aggressive amplification associated with the standard $\alpha=1$ correction while still applying a physically motivated centre-to-limb adjustment, we adopted $\alpha=0.8$ as the baseline value.
+
+\subsection{Adopted baseline method}
+
+Based on the tests above, the baseline method used in the remainder of this work is defined by the following parameter set:
+\begin{equation}
+    R_{\mathrm{inner}}=0.70,\qquad
+    R_{\mathrm{outer}}=0.90,
+\end{equation}
+for the smooth PHI--HMI radial blending, together with
+\begin{equation}
+    \mu_{\min}=0.40,\qquad
+    \alpha=0.8,
+\end{equation}
+for the LOS-to-radial conversion.
+
+This baseline configuration was chosen for three reasons. First, it avoids the non-monotonic behaviour introduced by a hard merge boundary. Second, it suppresses the strongest limb-driven instabilities identified in the $\mu_{\min}$ sensitivity study. Third, it employs a radial correction that is softer than the standard $1/\mu$ scaling while remaining smoothly connected to it.
+
+The resulting baseline method does not eliminate all uncertainties associated with the LOS-to-radial conversion; rather, it defines a stable and conservative working prescription for the present first-stage analysis. In particular, the adopted baseline should be understood as a pragmatic approximation suitable for intercomparison and blending studies, rather than as a definitive physical inversion of the radial magnetic field.
+
+%\subsection{Interpretation of the baseline solution}
+
+Under the adopted baseline prescription, the merged dipole estimates obtained from the validation subset consistently lie between the PHI-only and HMI-only values. The merged series is also more stable than the HMI-only series, while preserving broader spatial coverage in the binned Carrington representation. These properties make the baseline method appropriate for the present purpose: testing whether multi-view magnetic information from PHI can modify or stabilise large-scale dipole inference.
+
+At the same time, the sensitivity analysis makes clear that the principal limitation of the current approach lies in the approximate LOS-to-radial conversion rather than in the geometrical registration or blending procedure. This point is important for interpreting the results that follow: the adopted baseline provides a controlled and reproducible framework for comparison, but further physical refinement of the radial-field inference will ultimately be required for more definitive dipole estimates.
+
+
+\section{Results}
+\label{sec:results}
+
+%\subsection{Validation subset: 27--28 October 2022}
+
+We first applied the full PHI--HMI reprojection, smooth blending, and approximate dipole-estimation pipeline to the validation subset covering 27--28 October 2022. This subset contains eight matched PHI--HMI pairs with very small temporal offsets, making it suitable for testing the stability of the method under controlled conditions.
+
+\subsubsection{Direct PHI--HMI agreement after reprojection}
+
+After reprojection of HMI onto the PHI grid, the two LOS magnetogram series showed strong large-scale agreement. Visual inspection demonstrated that the same dominant magnetic structures were recovered in both datasets when expressed in the common PHI image frame. Quantitatively, the pixelwise agreement improved when the comparison was restricted to the inner solar disk, confirming that the largest discrepancies are associated with the outer disk and limb-proximate regions, where projection effects, differing viewpoints, and interpolation uncertainties are expected to be strongest.
+
+This result establishes that the WCS-based reprojection is sufficiently accurate for subsequent blending and dipole analysis. In particular, it shows that PHI and HMI can be brought into a common observational frame without introducing gross geometrical inconsistencies.
+
+\subsubsection{Behavior of the smooth merged maps}
+
+The smooth blending prescription produced merged LOS magnetograms that were visually consistent with both the PHI and reprojected HMI inputs and did not show the artificial seams or sharp discontinuities associated with the hard-boundary construction. The merged maps retained the large-scale magnetic morphology of the input data while suppressing the strong sensitivity to the exact merge radius that was found in the hard-switch tests.
+
+This confirms that the smooth radial blending procedure is a suitable method for constructing a combined multi-view LOS magnetic map and provides a stable basis for the subsequent radial-field and dipole calculations.
+
+\subsubsection{Baseline dipole estimates}
+
+Using the adopted baseline method,
+\begin{equation}
+    R_{\mathrm{inner}}=0.70,\qquad
+    R_{\mathrm{outer}}=0.90,\qquad
+    \mu_{\min}=0.40,\qquad
+    \alpha=0.8,
+\end{equation}
+we computed approximate Carrington-style dipole proxies for the PHI-only, HMI-only, and smoothly merged magnetic maps for all eight matched cases.
+
+The PHI-only dipole estimates were systematically weaker in magnitude than the corresponding HMI-based values, while the merged estimates remained intermediate between the two. Averaged over the eight-case subset, the mean dipole values were
+\begin{equation}
+    \langle D_{\mathrm{PHI}} \rangle = -0.118,
+    \qquad
+    \langle D_{\mathrm{HMI}} \rangle = -0.316,
+    \qquad
+    \langle D_{\mathrm{merge}} \rangle = -0.229.
+\end{equation}
+Thus, the merged estimate lies between the PHI-only and HMI-only values and does not collapse entirely to either input dataset.
+
+The mean offset of the merged dipole relative to PHI was
+\begin{equation}
+    \langle D_{\mathrm{merge}} - D_{\mathrm{PHI}} \rangle = -0.110,
+\end{equation}
+whereas the mean offset relative to HMI was
+\begin{equation}
+    \langle D_{\mathrm{merge}} - D_{\mathrm{HMI}} \rangle = +0.087.
+\end{equation}
+This indicates that, under the adopted baseline prescription, the merged dipole remains closer to the HMI estimate than to the PHI estimate, although it is still clearly modified by the inclusion of PHI.
+
+\subsubsection{Stability of the merged dipole series}
+
+An important result of the validation subset is that the merged dipole series is more stable than the HMI-only series. The case-to-case scatter of the merged dipoles is smaller than that of the HMI dipoles, indicating that the smooth multi-view combination reduces part of the variability present in the single-view HMI estimates. At the same time, the merged solution remains consistently stronger in magnitude than the PHI-only estimate.
+
+This behavior suggests that the main effect of the present PHI contribution is not necessarily to produce a dramatic shift in the inferred dipole amplitude in every case, but rather to provide a smoother and more stable intermediate solution. This is an encouraging result, because stability of the inferred large-scale magnetic moment is essential for any eventual application to surface flux transport modeling or cycle-precursor studies.
+
+\subsubsection{Coverage in the binned representation}
+
+The Carrington-style fill fraction of the merged maps remained equal to that of the PHI-based maps and exceeded that of the HMI-only maps. Thus, in the adopted approximation, the merged product retains the broader effective coverage of the PHI geometry while producing a dipole amplitude that lies between the PHI-only and HMI-only solutions. This is an important structural property of the method: the merged map inherits the broader usable disk coverage of PHI without simply reproducing the PHI-only dipole amplitude.
+
+Taken together, the validation-subset results demonstrate that the reprojection and smooth blending steps are robust and that the adopted baseline prescription yields a stable intermediate large-scale dipole estimate.
+
+\subsection{Polar-view application window}
+
+
+Following validation of the PHI--HMI reprojection and blending framework on the compact 2022 subset, we applied the same baseline method to a longer 2025 observing interval sampling the higher-latitude phase of the \textit{Solar Orbiter} mission. This application window contains 173 matched PHI--HMI cases processed with the adopted baseline prescription,
+\[
+R_{\mathrm{inner}} = 0.70,\qquad
+R_{\mathrm{outer}} = 0.90,\qquad
+\mu_{\min}=0.40,\qquad
+\alpha = 0.8.
+\]
+Over the full interval, the mean dipole proxies remain close to zero, with
+\[
+\langle D_{\mathrm{PHI}} \rangle = -0.0789,\qquad
+\langle D_{\mathrm{HMI}} \rangle = -0.0711,\qquad
+\langle D_{\mathrm{merge}} \rangle = -0.1035,
+\]
+but all three series show strong temporal variability. The corresponding standard deviations are large, indicating that the interval contains extended positive and negative dipole phases rather than a weak, stationary signal.
+
+Representative cases illustrate the main behavior of the 2025 application. A strong positive phase is observed on 22 February 2025 at 12:15~UT, for which the PHI-only, HMI-only, and merged dipole proxies are all positive and large in magnitude. In that case, the PHI and reprojected HMI maps show closely aligned large-scale magnetic morphology, and the merged solution follows the common positive configuration while remaining intermediate between the two source estimates. This case represents a regime of constructive agreement between the two viewpoints, in which the merged map largely preserves the same global polarity pattern seen by both instruments.
+
+A contrasting example is provided by the strong negative phase on 4 March 2025 at 20:15~UT. Here all three dipole proxies are strongly negative, but the merged dipole becomes slightly more negative than either PHI or HMI individually. The corresponding maps again show broadly consistent large-scale magnetic structure, so the enhanced magnitude of the merged dipole is not caused by an obvious reprojection failure. Instead, it reflects the fact that the merged dipole depends on the spatial weighting of magnetically important regions, not merely on a scalar averaging of the two input dipole values. This case demonstrates that the smooth blend can amplify the contribution of specific structures if they are favorably weighted in the merged map.
+
+The sign-transition interval on 6 March 2025 is particularly instructive. At 04:15~UT the merged dipole remains slightly negative, whereas by 08:15~UT it has become positive. This sign reversal occurs even though the PHI and reprojected HMI maps remain visually similar at the level of broad magnetic morphology. The transition therefore shows that the inferred axial dipole is sensitive to relatively subtle changes in the weighted large-scale field distribution rather than requiring a dramatic reorganization of the full-disk magnetogram. In the post-transition case, the PHI estimate remains slightly negative while the HMI estimate is clearly positive, and the merged dipole lies in between, indicating that the blending framework responds continuously to a changing balance in the low-order magnetic structure.
+
+An additional instructive example occurs on 31 March 2025 at 16:00~UT, when the HMI-based dipole proxy is strongly positive but the merged dipole remains much smaller and substantially closer to the PHI value. Inspection of the corresponding maps shows that the reprojected HMI contribution is confined to a restricted footprint within the PHI frame, whereas the merged map retains PHI-dominated structure over the remainder of the visible disk. This case highlights an important property of the method: the merged dipole is determined not only by the amplitude of the HMI signal, but also by the spatial overlap of the two viewpoints and by the radial weighting implicit in the blending procedure.
+
+Taken together, these representative cases show that the 2025 polar-view interval is scientifically richer than the 2022 validation subset. The 2022 analysis primarily established the technical robustness of the reprojection and blending pipeline, whereas the 2025 interval demonstrates that the inclusion of PHI constraints can modify the inferred dipole in a genuinely time-dependent and nontrivial way. The merged solution often follows the broad evolution shared by PHI and HMI, but its amplitude and even its sign can depend sensitively on the spatial distribution of magnetic structure within the blended map. This confirms that elevated-latitude PHI observations can affect the inferred large-scale dipole beyond a simple rescaling of the HMI-only result.
+
+\section{Discussion and Conclusions}
+\label{sec:discussion}
+
+The results presented above establish that PHI and HMI LOS magnetograms can be reliably intercompared after WCS-based reprojection and that smooth radial blending provides a practical way to construct a combined multi-view magnetic map. The direct LOS comparison on the 27--28 October 2022 validation subset shows that the two instruments recover the same large-scale magnetic morphology when expressed in a common coordinate frame, with the strongest discrepancies confined mainly to the outer disk where line-of-sight projection and interpolation effects are expected to be most severe. This demonstrates that the geometric part of the PHI--HMI fusion problem is tractable and that the dominant uncertainties arise elsewhere.
+
+A central result of this study is that the inferred dipole is much more sensitive to the treatment of near-limb pixels than to the precise form of the power-law LOS-to-radial correction once the limb threshold is fixed. In the present framework, the parameter $\mu_{\min}$ controls how strongly the outer disk contributes to the radial-field estimate and therefore acts as the primary determinant of dipole stability. By contrast, once $\mu_{\min}=0.40$ is adopted, varying the exponent $\alpha$ produces only smooth and monotonic changes in the inferred dipole. This indicates that the principal limitation of the current method is not the reprojection itself, nor the smooth blending prescription, but the physical approximation used to infer $B_r$ from LOS measurements.
+
+Within the adopted baseline method, the merged dipole estimates are consistently intermediate between the PHI-only and HMI-only values. At the same time, the merged series is less variable than the HMI-only series across the validation subset. This combination is important. It implies that the inclusion of PHI information does not merely reproduce the PHI-only result and does not leave the HMI estimate unchanged; instead, it yields a stable intermediate large-scale magnetic moment. In practical terms, the merged solution appears to inherit broader effective coverage from PHI while still remaining anchored to the stronger large-scale signal present in the HMI-based estimate.
+
+This behavior should be interpreted cautiously. The present dipole estimator is based on an approximate LOS-to-radial conversion and a Carrington-style visible-disk binning rather than on a full synoptic-field reconstruction. Accordingly, the dipole values reported here should be understood as controlled comparative proxies rather than final physical measurements of the Sun's true axial dipole moment. The value of the present analysis lies in isolating how the inferred large-scale dipole responds to changes in viewing geometry, blending strategy, and limb treatment, rather than in claiming that the current approximation is already definitive.
+
+Even with that limitation, the results have clear implications for future work. First, they show that multi-view magnetic constraints from \textit{Solar Orbiter}/PHI can be incorporated into a stable merged magnetic-field product. Second, they show that the main methodological bottleneck is now the LOS-to-radial conversion rather than the reprojection or blending framework. Third, they provide a validated baseline pipeline that can be applied to the 2025 polar-view interval, where the scientific impact of elevated-latitude observations on dipole inference can be tested more directly.
+
+The next natural improvement is therefore not a change in the reprojection or blending stage, but a more physical treatment of the radial-field inference. This may include a better LOS-to-radial conversion, stronger geometric weighting, or eventual assimilation into a true synoptic magnetic map. Such developments would allow the present pipeline to evolve from an approximate dipole-proxy framework into a more physically realistic surface magnetic-field reconstruction suitable for direct use in surface flux transport calculations.
+
+The main conclusions of this study can be summarized as follows:
+\begin{enumerate}
+    \item SO/PHI FDT LOS magnetograms and SDO/HMI LOS magnetograms can be robustly compared after WCS-based reprojection onto a common PHI image grid.
+    \item A smooth radial blending scheme is preferable to a hard-boundary replacement, because it avoids artificial discontinuities and produces more stable dipole estimates.
+    \item The inferred dipole is much more sensitive to the limb threshold $\mu_{\min}$ than to the exponent $\alpha$ in the LOS-to-radial conversion.
+    \item The adopted baseline prescription,
+    \[
+    R_{\mathrm{inner}}=0.70,\quad
+    R_{\mathrm{outer}}=0.90,\quad
+    \mu_{\min}=0.40,\quad
+    \alpha=0.8,
+    \]
+    yields a stable intermediate merged dipole estimate for the 27--28 October 2022 validation subset.
+    \item Under this baseline method, the merged dipole remains between the PHI-only and HMI-only estimates and is less variable than the HMI-only series, suggesting that smooth multi-view blending can stabilize large-scale dipole inference.
+    \item The principal remaining uncertainty lies in the physical conversion from LOS field to radial field, and the validated pipeline developed here provides a practical starting point for future application to the 2025 polar-view interval and to more realistic synoptic or surface flux transport studies.
+\end{enumerate}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{acks}
+ The authors thank ... ({\it note the reduced point size})
+\end{acks}
+
+\noindent To change a title use an optional parameter:\par
+\verb+\begin{acks}[Acknowledgements]...\end{acks}+
+
+
+
+%\acknowledgment US spelling: \verb+\acknowledgment+
+%\acknowledgement British  spelling: \verb+\acknowledgement+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix   
+
+
+\begin{authorcontribution}
+Information about author contribution ...
+\end{authorcontribution}
+
+\begin{fundinginformation}
+Information about fundings ...
+\end{fundinginformation}
+
+\begin{dataavailability}
+Information about available data ...
+\end{dataavailability}
+
+\begin{materialsavailability}
+Information about available material ...
+\end{materialsavailability}
+
+\begin{codeavailability}
+Information about available code ...
+\end{codeavailability}
+
+\begin{ethics}
+\begin{conflict}
+The authors declare that they have no conflicts of interest ....
+\end{conflict}
+\end{ethics}
+  
+  
+%%% BIBLIOGRAPHY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Bibliography Included with \BibTeX } 
+      % more powerful
+  With \BibTeX\ the formatting will be done automatically for all 
+the references cited with one
+of the \verb+\cite+ commands (Sect.~\ref{S-references}).
+Besides the usual items, it includes the title of the article 
+and the concluding page number. 
+   
+There is an option \texttt{showbiblabels} that adds a \verb+\bibitem+ 
+label at the end of every bibliography item. Label output is made on \verb+\endbibitem+ command.
+This option should be used 
+just for compatibility while citing a document (see the references below). 
+Don't forget to remove the option when document will be finished.
+
+\BibTeX\ style sorts references alphabetically by the authors, years, title but some times references
+need to be moved up or down in the list. This can be achieved adding \verb+sortkey+ field in the bib file entry.
+
+     % format of references provided by the journal (.bst)
+\bibliographystyle{spr-mp-sola}
+     % name your Bibtex file containing your references (.bib)
+\bibliography{sola_bibliography_example}  
+
+     % Checking: look if the file containing the ``\bibitem'' exits
+     %           so check if the .bbl file exist (bibTeX compilation)
+\IfFileExists{\jobname.bbl}{} {\typeout{}
+\typeout{****************************************************}
+\typeout{****************************************************}
+\typeout{** Please run "bibtex \jobname" to obtain} \typeout{**
+the bibliography and then re-run LaTeX} \typeout{** twice to fix
+the references !}
+\typeout{****************************************************}
+\typeout{****************************************************}
+\typeout{}}
+
+\section*{Bibliography included manually }
+     % Require more work
+  The articles can be entered, formatted, and ordered  
+by the author with the command \verb+\bibitem+.  ADS provides
+references in the {\it Solar Physics} format by selecting
+the format \verb+SoPh format+ under the menu 
+\verb+Select short list format+.    Including the article title
+and the concluding page number are optional;
+however, we require consistency in the author's choice.
+That is, all of the references should have the article title, or none,
+and similarly for ending page numbers.
+
+\begin{thebibliography}{}
+\bibitem[\protect\citeauthoryear{{Berger}}{2003}]{Berger03b}
+Berger,~M.A.: 
+2003, in Ferriz-Mas, A., N{\'u}{\~n}ez, M. (eds.),
+\textit{Advances in Nonlinear Dynamics}, Taylor and Francis Group, 
+London, 345.
+\bibitem[\protect\citeauthoryear{{Berger} and {Field}}{1984}]{BergerF84b}
+Berger,~M.A., Field,~G.B.: 
+1984, \textit{J. Fluid. Mech.} \textbf{147}, 133.
+\bibitem[\protect\citeauthoryear{{Brown}, {Canfield}, and {Pevtsov}}{1999}]{Brown99b}
+Brown,~M., Canfield,~R., Pevtsov,~A.:
+1999, Magnetic Helicity in Space and Laboratory Plasmas, Geophys. Mon. 
+Ser. 111, AGU.
+\bibitem[\protect\citeauthoryear{{Dupont}, {Schmidt}, and {Koutny}}{2007}]{Dupont2007}
+Dupont, J.-C., Schmidt, F., Koutny, P.: 2007, \solphys{} \textbf{323}, 965. 
+\end{thebibliography}
+
+
+\end{document}
