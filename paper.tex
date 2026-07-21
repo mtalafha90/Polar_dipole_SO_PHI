@@ -1,11 +1,9 @@
 %% paper.tex -- Astronomy & Astrophysics (A&A) manuscript
 %%
-%% Requires the official A&A LaTeX class and bibliography style
-%% (aa.cls, aa.bst), distributed by the journal and available from
-%% https://www.aanda.org/for-authors/latex-issues and CTAN
-%% (https://ctan.org/pkg/aa). These files are not redistributed in
-%% this repository; place them alongside this file (or on the TeX
-%% search path) before compiling.
+%% Uses the official A&A LaTeX class and bibliography style (aa.cls,
+%% aa.bst, plus the lineno/linenoaa support files), included in this
+%% repository alongside this file. Compiles with:
+%%   pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper
 %%
 \documentclass{aa}
 
@@ -30,11 +28,11 @@ HUN-REN Wigner Research Centre for Physics, Budapest, Hungary
 \date{Received ---; accepted ---}
 
 \abstract
-{The Sun's axial dipole moment $g_{10}$ is the strongest observational precursor of the amplitude of the following solar cycle, and it is the quantity a surface flux transport (SFT) model must be initialised with. Its value is set by the polar magnetic fields, precisely the region that near-ecliptic magnetographs such as SDO/HMI never observe at favourable viewing angles.}
+{The Sun's axial dipole moment $g_{10}$ is the strongest observational precursor of the next solar cycle's amplitude, and the quantity a surface flux transport (SFT) model must be initialised with. Its value is set by the polar field, precisely the region near-ecliptic magnetographs such as SDO/HMI never observe at favourable angles.}
 {We ask whether the out-of-ecliptic vantage of Solar Orbiter/PHI measurably improves polar-field coverage and the resulting SFT prediction, relative to Earth-view data alone.}
-{Using a common, open-source pipeline that builds PHI-only, HMI-only (native Earth-view geometry), and merged Carrington maps and computes $g_{10}$ under three polar-filling assumptions, we analyse a low-inclination demonstration window (Carrington rotation, CR, 2264, 2022) and the decisive high-$B_0$ campaign of February--July 2025 (CR\,2294--2299), during which Solar Orbiter's heliographic latitude of disk centre, $B_0$, swept from $-2^{\circ}$ through $-16.7^{\circ}$ to $+16.8^{\circ}$ and back towards the ecliptic.}
-{We find that PHI's $\ge 60^{\circ}$ polar-cap coverage overtakes HMI by up to a factor of 16 (north cap 51\% versus 3\% in April 2025), that the advantage switches on and off with $|B_0|$ exactly as predicted, and -- crucially -- that it is largest precisely when the Solar Orbiter--Earth longitude separation is largest, so that a per-pixel map merge is invalid at the decisive epochs. Injecting PHI's north-cap field into the SFT initial condition at the epoch where HMI is effectively blind shifts the first predicted polar reversal by $-1.68$\,yr; injecting its co-observed south-cap field, where HMI already sees the pole, changes the reversal timing by only $-0.004$\,yr.}
-{The polar view alters the flux-transport prediction only where the Earth view lacks the information. Solar Orbiter/PHI's value therefore lies not in a co-registered merge partner for HMI, but as a standalone polar boundary constraint at the epochs when Earth-based magnetographs cannot see a given pole: the two vantages are complementary in time, not in space.}
+{Using a common, open-source pipeline that builds PHI-only, HMI-only (native Earth-view geometry), and merged Carrington maps and computes $g_{10}$ under three polar-filling assumptions, we analyse a low-inclination demonstration window (Carrington rotation, CR, 2264, 2022) and the decisive high-$B_0$ campaign of February--July 2025 (CR\,2294--2299), during which Solar Orbiter's disk-centre latitude $B_0$ swept from $-2^{\circ}$ through $-16.7^{\circ}$ to $+16.8^{\circ}$ and back.}
+{PHI's $\ge 60^{\circ}$ polar-cap coverage overtakes HMI by up to a factor of 16 (north cap 51\% versus 3\% in April 2025); the advantage switches on and off with $|B_0|$ exactly as predicted and, crucially, is largest precisely when the Solar Orbiter--Earth longitude separation is largest, so a per-pixel map merge is invalid at the decisive epochs. Injecting PHI's north-cap field into the SFT initial condition where HMI is effectively blind shifts the first predicted polar reversal by $-1.68$\,yr; injecting its co-observed south-cap field, where HMI already sees the pole, changes the timing by only $-0.004$\,yr.}
+{The polar view alters the flux-transport prediction only where the Earth view lacks the information: Solar Orbiter/PHI's value lies not as a co-registered merge partner for HMI, but as a standalone polar boundary constraint when Earth-based magnetographs cannot see a given pole. The two vantages are complementary in time, not in space.}
 
 \keywords{Sun: magnetic fields -- Sun: photosphere -- Sun: activity -- Sun: heliosphere -- methods: data analysis -- instrumentation: polarimeters}
 
@@ -136,13 +134,13 @@ A hard-boundary merge, in which one dataset is used inside a fixed disk radius a
     B_{\rm merge}(r) = w_{\rm PHI}(r)\, B_{\rm PHI}(r) + \left[1 - w_{\rm PHI}(r)\right] B_{\rm HMI}(r),
     \label{eq:blend}
 \end{equation}
-with the PHI weight defined piecewise as
+with the PHI weight defined piecewise, in terms of the fractional position $x \equiv (r - R_{\rm inner})/(R_{\rm outer} - R_{\rm inner})$ within the transition annulus, as
 \begin{equation}
     w_{\rm PHI}(r) =
     \begin{cases}
         1, & r \le R_{\rm inner}, \\[4pt]
-        \dfrac{1}{2}\left[1 + \cos\!\left(\pi \dfrac{r - R_{\rm inner}}{R_{\rm outer} - R_{\rm inner}}\right)\right], & R_{\rm inner} < r < R_{\rm outer}, \\[8pt]
-        0, & r \ge R_{\rm outer}.
+        \frac{1}{2}\left[1 + \cos(\pi x)\right], & R_{\rm inner} < r < R_{\rm outer}, \\[6pt]
+        0, & r \ge R_{\rm outer},
     \end{cases}
     \label{eq:weight}
 \end{equation}
@@ -249,10 +247,10 @@ Because a per-pixel merge is invalid at the high-$B_0$ epochs, we inject PHI as 
 \caption{SFT polar-constraint experiment results.}
 \label{tab:sft}
 \centering
-\small
+\footnotesize
 \begin{tabular}{lccc}
 \hline\hline
-Constraint & HMI cap fill & Injected field & $\Delta$ first reversal \\
+Constraint & HMI fill & PHI field & $\Delta t_{\rm rev}$ \\
 \hline
 North (CR\,2296) & 3\%  & $-1.51$\,G\tablefootmark{a} & $-1.68$\,yr \\
 North (CR\,2297) & 12\% & $-1.57$\,G\tablefootmark{a} & $-1.27$\,yr \\
