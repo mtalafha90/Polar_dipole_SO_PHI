@@ -7,11 +7,12 @@
 %%
 \documentclass{aa}
 
-% aa.cls forces T1 font encoding; without scalable T1 outlines installed,
-% pdflatex falls back to auto-generated low-resolution bitmap fonts for
-% emphasised/italic text. lmodern supplies proper T1 outlines and keeps
-% the rendered font crisp at any zoom level.
-\usepackage{lmodern}
+% txfonts gives the Times-based text/math faces standard in published A&A
+% articles (the default Computer/Latin Modern faces read as generic LaTeX
+% output). It also supplies full scalable T1 outlines itself, so it
+% incidentally avoids the low-resolution bitmap-font fallback aa.cls's
+% forced T1 encoding can otherwise trigger.
+\usepackage{txfonts}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
