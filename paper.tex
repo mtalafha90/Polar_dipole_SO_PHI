@@ -7,6 +7,11 @@
 %%
 \documentclass{aa}
 
+% aa.cls forces T1 font encoding; without scalable T1 outlines installed,
+% pdflatex falls back to auto-generated low-resolution bitmap fonts for
+% emphasised/italic text. lmodern supplies proper T1 outlines and keeps
+% the rendered font crisp at any zoom level.
+\usepackage{lmodern}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -224,7 +229,11 @@ The pattern matches the hypothesis and, over the extended window, traces a full 
 
 \begin{figure}
 \centering
-%\includegraphics[width=\columnwidth]{baseline_outputs/campaign_polar_advantage.png}
+% \includegraphics[width=\columnwidth]{baseline_outputs/campaign_polar_advantage.png}
+\fbox{\begin{minipage}[c][0.30\columnwidth][c]{0.92\columnwidth}
+\centering\itshape\small
+Figure not yet generated --- run \texttt{scripts/plot\_campaign\_summary.py}, then uncomment the \texttt{\textbackslash includegraphics} line above.
+\end{minipage}}
 \caption{Solar Orbiter's $B_0$ excursion and the PHI-versus-HMI north/south polar-cap fill per rotation across the 2025 campaign, with the Solar Orbiter--Earth separation range annotated. Reproduced by \texttt{scripts/plot\_campaign\_summary.py}; regenerate the pipeline outputs before compiling to populate this panel.}
 \label{fig:campaign}
 \end{figure}
@@ -267,7 +276,11 @@ The two northern rotations both pull the first predicted reversal 1.3--1.7\,yr e
 
 \begin{figure}
 \centering
-%\includegraphics[width=\columnwidth]{baseline_outputs/cr_2296/milestone/sft_polar/sft_polar_figure.png}
+% \includegraphics[width=\columnwidth]{baseline_outputs/cr_2296/milestone/sft_polar/sft_polar_figure.png}
+\fbox{\begin{minipage}[c][0.30\columnwidth][c]{0.92\columnwidth}
+\centering\itshape\small
+Figure not yet generated --- run \texttt{scripts/run\_sft\_polar\_experiment.py} and \texttt{scripts/plot\_sft\_polar.py}, then uncomment the \texttt{\textbackslash includegraphics} line above.
+\end{minipage}}
 \caption{HMI-only initial condition (flat near zero through the constrained cap) versus the HMI+PHI polar-constrained initial condition, and the resulting $g_{10}(t)$ with the $-1.68$\,yr reversal-timing shift. Reproduced by \texttt{scripts/run\_sft\_polar\_experiment.py} and \texttt{scripts/plot\_sft\_polar.py}; regenerate the pipeline outputs before compiling to populate this panel.}
 \label{fig:sft}
 \end{figure}
