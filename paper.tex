@@ -285,7 +285,27 @@ Figure not yet generated --- run \texttt{scripts/run\_sft\_polar\_experiment.py}
 \subsection{Reference validation and its limit}
 \label{sec:results-reference}
 
-Checked per rotation against \texttt{hmi.synoptic\_mr\_polfil\_720s} \citep{Sun2018}, the standard chart's dipole grows steadily more negative through the window, $g_{10,\rm ref} = -0.21, -0.17, -0.18, -0.39, -0.57, -0.52$\,G for CR\,2294--2299, tracking the cycle-25 axial dipole rebuilding (negative) after the polar reversal. Early in the window, where the true dipole is near zero, the partial-coverage products do not reproduce its sign (all positive, $+0.3$ to $+1.0$\,G), because a near-zero dipole sampled from partial per-rotation longitude coverage is swamped by sampling noise, so the early-2025 \emph{absolute} $g_{10}$ magnitudes are provisional. As the true dipole strengthens, however, the products lock onto it: by CR\,2299 both PHI ($-0.19$\,G) and HMI ($-0.03$\,G) are negative, matching the reference sign, and PHI is now closer to the reference than HMI ($\Delta = +0.37$ versus $+0.49$\,G) -- the opposite of the early ordering. Once the north polar field is strong and negative, the vantage that actually sees it (PHI) recovers more of it than the Earth-view extrapolation, corroborating the CR\,2297 polarity result (Sect.~\ref{sec:results-sign}) from a second, independent direction.
+Checked per rotation against \texttt{hmi.synoptic\_mr\_polfil\_720s} \citep{Sun2018}, the standard chart's dipole holds near $-0.17$ to $-0.21$\,G through CR\,2294--2296, then declines sharply to $-0.57$\,G by CR\,2298 before a slight rebound to $-0.52$\,G at CR\,2299 (Table~\ref{tab:reference}), tracking the cycle-25 axial dipole rebuilding (negative) after the polar reversal. Early in the window, where the true dipole is near zero, the partial-coverage products do not reproduce its sign (all positive, $+0.3$ to $+1.0$\,G in project mode), because a near-zero dipole sampled from partial per-rotation longitude coverage is swamped by sampling noise, so the early-2025 \emph{absolute} $g_{10}$ magnitudes are provisional. As the true dipole strengthens, however, the products lock onto it: by CR\,2299 both PHI ($-0.19$\,G) and HMI ($-0.03$\,G) are negative, matching the reference sign, and PHI is now closer to the reference than HMI ($\Delta = +0.33$ versus $+0.49$\,G) -- the opposite of the early ordering. Once the north polar field is strong and negative, the vantage that actually sees it (PHI) recovers more of it than the Earth-view extrapolation, corroborating the CR\,2297 polarity result (Sect.~\ref{sec:results-sign}) from a second, independent direction.
+
+\begin{table}
+\caption{Axial dipole moment against the reference chart, project-fill mode.}
+\label{tab:reference}
+\centering
+\footnotesize
+\begin{tabular}{lccccc}
+\hline\hline
+Rotation & $g_{10,\rm ref}$ & $g_{10,\rm PHI}$ & $\Delta_{\rm PHI}$ & $g_{10,\rm HMI}$ & $\Delta_{\rm HMI}$ \\
+\hline
+CR\,2294 & $-0.21$ & $+0.47$ & $+0.68$ & $+0.35$ & $+0.57$ \\
+CR\,2295 & $-0.17$ & $+0.98$ & $+1.15$ & $+0.34$ & $+0.50$ \\
+CR\,2296 & $-0.18$ & $+0.56$ & $+0.74$ & $+0.17$ & $+0.36$ \\
+CR\,2297 & $-0.39$ & $+0.29$ & $+0.68$ & $+0.12$ & $+0.50$ \\
+CR\,2298 & $-0.57$ & $+0.11$ & $+0.67$ & $-0.01$ & $+0.55$ \\
+CR\,2299 & $-0.52$ & $-0.19$ & $+0.33$ & $-0.03$ & $+0.49$ \\
+\hline
+\end{tabular}
+\tablefoot{All values in G. $g_{10,\rm ref}$ is from \texttt{hmi.synoptic\_mr\_polfil\_720s}; $\Delta_X = g_{10,X} - g_{10,\rm ref}$. From \texttt{scripts/compare\_reference\_by\_rotation.py} (\texttt{data/reference\_dipole\_by\_rotation.csv}). The merged product has valid rows only for CR\,2294--2295 (Sect.~\ref{sec:methods-guard}); for CR\,2296--2299 the Solar Orbiter--Earth separation exceeds the merge guard and no merged product exists.}
+\end{table}
 
 %-------------------------------------------------------------------
 \section{Discussion}
