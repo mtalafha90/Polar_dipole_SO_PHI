@@ -122,9 +122,12 @@ def download_phi(start: str, end: str, phi_dir: Path) -> list[Path]:
     phi_dir.mkdir(exist_ok=True, parents=True)
 
     print(f"Querying SOAR for phi-fdt-blos L2 files in [{start}, {end}) ...")
+    # No a.Instrument("PHI") here: it is redundant with a.soar.Product(),
+    # which already fully specifies instrument/detector/data-type, and on
+    # sunpy 8.0.0 combining the two zeroes out the match (confirmed: either
+    # attribute alone finds the same records; together they find none).
     result = Fido.search(
         a.Time(start, end),
-        a.Instrument("PHI"),
         a.Level(2),
         a.soar.Product("phi-fdt-blos"),
     )
