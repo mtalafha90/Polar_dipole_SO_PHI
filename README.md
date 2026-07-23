@@ -15,8 +15,7 @@ written draft in [`docs/manuscript.md`](docs/manuscript.md), the
 [`paper.tex`](paper.tex) (self-contained: builds with the included
 `aa.cls`/`aa.bst`/`lineno.sty`/`linenoaa.sty` and
 [`references.bib`](references.bib) via
-`pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper`; a
-pre-built [`paper.pdf`](paper.pdf) is also included), a
+`pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper`), a
 self-contained shareable results page in
 [`docs/results_brief.html`](docs/results_brief.html), and a
 clean-run reproduction runbook in

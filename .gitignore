@@ -7,3 +7,14 @@ sopyhi_env/
 
 # pipeline outputs (regenerable)
 baseline_outputs/
+
+# LaTeX build artifacts (paper.pdf is regenerable from paper.tex; see README)
+paper.pdf
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
