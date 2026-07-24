@@ -22,10 +22,10 @@ INK, MUTED, GRID = "#1a1a1a", "#5a5a5a", "#d8d8d8"
 # separation range (deg), N-cap PHI/HMI (%), S-cap PHI/HMI (%).
 # CR2298-2299 B0/separation ranges are the paper's own approximate figures.
 ROTATIONS = [
-    dict(cr=2294, dates="Feb 14 - Mar 1",  b0=(-2, -8),   sep=(15, 21),   n=(5, 0),   s=(30, 38)),
+    dict(cr=2294, dates="Feb 14 - Mar 1",  b0=(-2, -8),   sep=(15, 21),   n=(5, 0),   s=(30, 37)),
     dict(cr=2295, dates="Mar 2 - Mar 28",  b0=(-8, -17),  sep=(0.3, 60),  n=(0, 0),   s=(64, 46)),
     dict(cr=2296, dates="Mar 31 - Apr 24", b0=(-8, 17),   sep=(80, 165),  n=(51, 3),  s=(12, 41)),
-    dict(cr=2297, dates="Apr 26 - May 21", b0=(14, 17),   sep=(168, 180), n=(77, 12), s=(0, 34)),
+    dict(cr=2297, dates="Apr 26 - May 21", b0=(14, 17),   sep=(168, 180), n=(77, 13), s=(0, 34)),
     dict(cr=2298, dates="May 23 - Jun 19", b0=(14, 6),    sep=(155, 179), n=(64, 23), s=(0, 24)),
     dict(cr=2299, dates="Jun 20 - Jul 16", b0=(6, 0),     sep=(90, 160),  n=(45, 34), s=(4, 13)),
 ]
