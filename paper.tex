@@ -211,7 +211,23 @@ Each product is injected as a zonally averaged $B(\lambda)$ initial condition, w
 \subsection{Method demonstration: CR\,2264, low $B_0$}
 \label{sec:results-demo}
 
-At CR\,2264 (24 PHI cases, 27~October--3~November 2022) Solar Orbiter led Earth in $B_0$ by only $\approx 2.5^{\circ}$, so the window mostly tests the machinery rather than a large polar gain. The two vantages agree on $g_{10}$ to $\approx 0.05$\,G on their common support (zero-fill mode: $-0.18$\,G for PHI versus $-0.23$\,G for HMI), and the maps correlate at $r = 0.89$, establishing consistency. Against the standard polar-filled HMI synoptic chart ($g_{10,\rm ref} = +0.65$\,G) the PHI-informed product (project mode) agrees to $+0.04$\,G (6\%), while the same-pipeline Earth-view product misses by $\approx 5\times$ more, with the accuracy ordering following the polar-cap fill.
+At CR\,2264 (24 PHI cases, 27~October--3~November 2022) Solar Orbiter led Earth in $B_0$ by only $\approx 2.5^{\circ}$, so the window mostly tests the machinery rather than a large polar gain. The two vantages agree on $g_{10}$ to $\approx 0.05$\,G on their common support (zero-fill mode: $-0.18$\,G for PHI versus $-0.23$\,G for HMI), and the maps correlate at $r = 0.89$ (Fig.~\ref{fig:maps2264}), establishing consistency. Against the standard polar-filled HMI synoptic chart ($g_{10,\rm ref} = +0.65$\,G) the PHI-informed product (project mode) agrees to $+0.04$\,G (6\%), while the same-pipeline Earth-view product misses by $\approx 5\times$ more, with the accuracy ordering following the polar-cap fill.
+
+\begin{figure*}
+\centering
+% Three separate pipeline map plots side by side. Upload the CR 2264
+% map_{phi,hmi,merged}.png from baseline_outputs/milestone/plots/,
+% renamed as below, then uncomment these three lines:
+% \includegraphics[width=0.32\textwidth]{figures/maps_cr2264_phi.png}\hfill
+% \includegraphics[width=0.32\textwidth]{figures/maps_cr2264_hmi.png}\hfill
+% \includegraphics[width=0.32\textwidth]{figures/maps_cr2264_merged.png}
+\fbox{\begin{minipage}[c][0.20\textwidth][c]{0.96\textwidth}
+\centering\itshape\small
+Placeholder --- upload the three CR\,2264 map plots as \texttt{figures/maps\_cr2264\_phi.png}, \texttt{maps\_cr2264\_hmi.png}, and \texttt{maps\_cr2264\_merged.png} (from \texttt{baseline\_outputs/milestone/plots/map\_\{phi,hmi,merged\}.png}), then uncomment the three \texttt{\textbackslash includegraphics} lines above.
+\end{minipage}}
+\caption{Radial-field ($B_r$) Carrington maps for the low-$B_0$ CR\,2264 demonstration: PHI-only (left), HMI-only in native Earth-view geometry (centre), and the smooth merge (right). At this small Solar Orbiter--Earth separation the two vantages overlap and agree ($r = 0.89$ on the common support), and the merge is well posed.}
+\label{fig:maps2264}
+\end{figure*}
 
 Driving the SFT model with these initial conditions, the PHI-informed input evolves to an asymptotic dipole of $+3.29$\,G versus $+1.06$\,G for HMI-only (a factor $\approx 3$), and with a cycle source the first polar reversal shifts by 1.26\,yr. This demonstrates the propagation mechanism from map to prediction; the decisive polar test requires a much larger $B_0$ advantage, which the 2025 campaign provides.
 
@@ -242,23 +258,7 @@ CR\,2299 & Jun 20 -- Jul 16 & $+6^{\circ} \rightarrow 0^{\circ}$\tablefootmark{a
 }
 \end{table*}
 
-The pattern matches the hypothesis and, over the extended window, traces a full rise and fall. Near the ecliptic (CR\,2294), where the small Solar Orbiter--Earth separation keeps the two vantages overlapping and the merge well posed (Fig.~\ref{fig:mapslowsep}), PHI has no advantage. As Solar Orbiter dives south (CR\,2295) PHI's south-cap coverage overtakes HMI (64\% versus 46\%). As it crosses to a northern view PHI dominates the north cap, strengthening to 77\% versus 13\% across the full CR\,2297 rotation at the $+14^{\circ}$ to $+17^{\circ}$ apex, in near-perfect opposition (separation $168^{\circ}$--$180^{\circ}$, zero co-observed pixels all month) -- the purest standalone-constraint configuration in the campaign. As Solar Orbiter then descends from the apex (CR\,2298--2299) the advantage switches off symmetrically: PHI's north-cap fill falls from 77\% to 64\% to 45\%, while HMI's climbs from 13\% to 23\% to 34\% as Earth's $B_0$ rises towards zero into northern summer, until by CR\,2299 the gap has nearly closed. The advantage is thus governed by the \emph{difference} between the two heliolatitudes, switching on and off with it. The merged product stays empty throughout CR\,2296--2299, since Solar Orbiter remains on the far side of the Sun even as the coverage advantage fades: the coverage effect (driven by $B_0$) and the merge-validity effect (driven by separation) decouple. Because this result is a count of observed bins, it is independent of calibration and of the polar-fill assumption, and it is the campaign's most robust finding.
-
-\begin{figure*}
-\centering
-% Three separate pipeline map plots side by side. Upload the CR 2294
-% map_{phi,hmi,merged}.png from baseline_outputs/cr_2294/milestone/plots/,
-% renamed as below, then uncomment these three lines:
-% \includegraphics[width=0.32\textwidth]{figures/maps_cr2294_phi.png}\hfill
-% \includegraphics[width=0.32\textwidth]{figures/maps_cr2294_hmi.png}\hfill
-% \includegraphics[width=0.32\textwidth]{figures/maps_cr2294_merged.png}
-\fbox{\begin{minipage}[c][0.20\textwidth][c]{0.96\textwidth}
-\centering\itshape\small
-Placeholder --- upload the three CR\,2294 map plots as \texttt{figures/maps\_cr2294\_phi.png}, \texttt{maps\_cr2294\_hmi.png}, and \texttt{maps\_cr2294\_merged.png} (from \texttt{baseline\_outputs/cr\_2294/milestone/plots/map\_\{phi,hmi,merged\}.png}), then uncomment the three \texttt{\textbackslash includegraphics} lines above.
-\end{minipage}}
-\caption{Radial-field ($B_r$) Carrington maps for CR\,2294, a small-separation ($15^{\circ}$--$21^{\circ}$) campaign rotation: PHI-only (left), HMI-only in native Earth-view geometry (centre), and the smooth merge (right). Because the two spacecraft co-observe nearly the same disk, the maps overlap and the merge is well posed -- the small-separation regime, to be contrasted with the opposite-hemisphere CR\,2297 case (Fig.~\ref{fig:mapshighb0}), where no disk is shared and the merged product is empty.}
-\label{fig:mapslowsep}
-\end{figure*}
+The pattern matches the hypothesis and, over the extended window, traces a full rise and fall. Near the ecliptic (CR\,2294) PHI has no advantage. As Solar Orbiter dives south (CR\,2295) PHI's south-cap coverage overtakes HMI (64\% versus 46\%). As it crosses to a northern view PHI dominates the north cap, strengthening to 77\% versus 13\% across the full CR\,2297 rotation at the $+14^{\circ}$ to $+17^{\circ}$ apex, in near-perfect opposition (separation $168^{\circ}$--$180^{\circ}$, zero co-observed pixels all month) -- the purest standalone-constraint configuration in the campaign. As Solar Orbiter then descends from the apex (CR\,2298--2299) the advantage switches off symmetrically: PHI's north-cap fill falls from 77\% to 64\% to 45\%, while HMI's climbs from 13\% to 23\% to 34\% as Earth's $B_0$ rises towards zero into northern summer, until by CR\,2299 the gap has nearly closed. The advantage is thus governed by the \emph{difference} between the two heliolatitudes, switching on and off with it. The merged product stays empty throughout CR\,2296--2299, since Solar Orbiter remains on the far side of the Sun even as the coverage advantage fades: the coverage effect (driven by $B_0$) and the merge-validity effect (driven by separation) decouple. Because this result is a count of observed bins, it is independent of calibration and of the polar-fill assumption, and it is the campaign's most robust finding.
 
 \begin{figure}
 \centering
